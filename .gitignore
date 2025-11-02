@@ -1,0 +1,52 @@
+# Python / Django
+/backend/venv/
+/backend/__pycache__/
+/backend/*.pyc
+/backend/*.pyo
+/backend/*.pyd
+/backend/.Python
+/backend/staticfiles/
+/backend/media/
+/backend/*.log
+/backend/.pytest_cache/
+/backend/.coverage
+/backend/htmlcov/
+
+# Node / React
+/frontend/node_modules/
+/frontend/build/
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/.eslintcache
+
+# PostgreSQL data & logs (persisted by Docker)
+/db/data/
+docker/postgres_data/
+
+# GeoServer data (if you don't want to track data_dir contents)
+/geoserver/data_dir/logs/
+*.log
+
+# Docker Compose environment
+/docker/.env
+/backend/.env
+/frontend/.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+/data/
+/backend/data/

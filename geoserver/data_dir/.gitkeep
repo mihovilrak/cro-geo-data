@@ -1,0 +1,3 @@
+# This directory will contain GeoServer data directory
+# GeoServer will create workspace, styles, and other configuration files here
+
