@@ -1,15 +1,15 @@
 # Python / Django
 /backend/venv/
-/backend/__pycache__/
-/backend/*.pyc
-/backend/*.pyo
-/backend/*.pyd
-/backend/.Python
-/backend/staticfiles/
-/backend/media/
-/backend/*.log
+/backend/*/__pycache__/
+/backend/*/*.pyc
+/backend/*/*.pyo
+/backend/*/*.pyd
+/backend/*/.Python
+/backend/*/staticfiles/
+/backend/*/media/
+/backend/*/*.log
 /backend/.pytest_cache/
-/backend/.coverage
+/backend/*/.coverage
 /backend/htmlcov/
 
 # Node / React
