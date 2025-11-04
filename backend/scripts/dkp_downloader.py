@@ -31,7 +31,7 @@ class DKPDownloader:
         """
         Initialize the downloader.
         """
-        self.output_dir = self.DOWNLOADS_DIR / self.DATE
+        self.output_dir = self.DOWNLOADS_DIR / 'dkp' / self.DATE
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         self.atom_xml_path = self.output_dir / f'{self.DATE}_atom_feed.xml'

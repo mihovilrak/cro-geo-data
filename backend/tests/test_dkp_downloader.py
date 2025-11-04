@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 import httpx
 import pytest
 
-from scripts.dkp_scrapper import DKPDownloader, Entry
+from scripts.dkp_downloader import DKPDownloader, Entry
 
 
 def async_iter_bytes(data: bytes):
@@ -400,7 +400,11 @@ class TestDKPDownloader:
 
     @pytest.mark.asyncio
     @patch("scripts.dkp_scrapper.DKPDownloader.download_zip")
-    async def test_scrape_with_failures(self, mock_download_zip: AsyncMock, temp_dir: Path) -> None:
+    async def test_scrape_with_failures(
+        self,
+        mock_download_zip: AsyncMock,
+        temp_dir: Path
+    ) -> None:
         """Test scraping with some download failures."""
         with patch.object(DKPDownloader, "DOWNLOADS_DIR", temp_dir):
             entry1 = Entry(1, "Test 1", "https://example.com/test1.zip", datetime.now())
@@ -446,7 +450,11 @@ class TestDKPDownloader:
             assert len(results) == 2
 
     @patch("scripts.dkp_scrapper.DKPDownloader._download")
-    def test_download_sync_entry_point(self, mock_async_download: AsyncMock, temp_dir: Path) -> None:
+    def test_download_sync_entry_point(
+        self,
+        mock_async_download: AsyncMock,
+        temp_dir: Path
+    ) -> None:
         """Test the synchronous download entry point."""
         with patch.object(DKPDownloader, "DOWNLOADS_DIR", temp_dir):
             mock_async_download.return_value = [temp_dir / "file1.zip"]
