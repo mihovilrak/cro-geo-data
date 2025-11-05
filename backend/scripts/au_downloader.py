@@ -9,7 +9,7 @@ from logger import logger
 
 URL = "https://geoportal.dgu.hr/services/atom/INSPIRE_Administrative_Units_(AU).zip"
 DOWNLOADS_DIR = Path(__file__).parent.parent / 'data' / 'downloads'
-DATE = date.today().isoformat()
+DATE       = date.today().isoformat()
 OUTPUT_DIR = DOWNLOADS_DIR / 'au' / DATE
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
