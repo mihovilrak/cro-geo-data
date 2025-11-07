@@ -1,9 +1,9 @@
 """
 Module for extracting and parsing geospatial data from ZIP archives containing GML files.
 
-This script provides functions to extract 'DKP' (cadastral parcels and related layers) 
-and 'AU' (administrative units) data from ZIP archives, parse them using SQL templates, 
-and load them into a PostGIS-enabled PostgreSQL database. The appropriate SQL scripts 
+This script provides functions to extract 'DKP' (cadastral parcels and related layers)
+and 'AU' (administrative units) data from ZIP archives, parse them using SQL templates,
+and load them into a PostGIS-enabled PostgreSQL database. The appropriate SQL scripts
 and GML files are handled automatically, and logs are generated for each major step.
 
 Environment variable:
@@ -34,7 +34,7 @@ DKP_TYPES = ('katastarske_opcine', 'katastarske_cestice', 'nacini_uporabe_zgrada
 @contextlib.contextmanager
 def extractor(zip_path: Path) -> Iterator[Path]:
     """
-    Context manager for extracting a ZIP archive and returning 
+    Context manager for extracting a ZIP archive and returning
     the path to the extracted files.
 
     Args:
@@ -86,7 +86,7 @@ def extract_ad(zip_path: Path) -> None:
     """
     Extracts 'Addresses.gml' from the given ZIP archive,
     parses the addresses and loads them into PostGIS.
-    
+
     Args:
         zip_path (Path): Path to the ZIP archive containing Addresses.gml.
     """
@@ -98,7 +98,7 @@ def parse_gml(gml_file: Path, sql: str, layer_name: str) -> None:
     """
     Parses a GML file using the provided SQL template
     and loads it into the PostGIS database using ogr2ogr.
-    
+
     Args:
         gml_file (Path): Path to the GML file to parse.
         sql (str): SQL template to use for parsing.
