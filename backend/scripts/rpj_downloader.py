@@ -43,7 +43,7 @@ async def _download_zip(url: str, filename: str, output_dir: Path) -> Path:
     """
     logger.info(f"Downloading AU dataset from {url}")
     dest_path = output_dir / filename
-    async with aiofiles.open(filename, 'wb') as f:
+    async with aiofiles.open(dest_path, 'wb') as f:
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
             response.raise_for_status()
