@@ -1,6 +1,6 @@
 SELECT  ZGRADA_ID as id,
-        BROJ_ZGRADE as broj_zgrade,
-        MATICNI_BROJ_KO as ko_maticni_broj,
-        SIFRA_NACINA_UPORABE_ZGRADE as uporaba_sifra,
+        BROJ_ZGRADE as building_number,
+        MATICNI_BROJ_KO as cadastral_municipality_code,
+        SIFRA_NACINA_UPORABE_ZGRADE as usage_code,
         geom
 FROM "ZGRADE";
