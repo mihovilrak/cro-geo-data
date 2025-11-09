@@ -12,24 +12,42 @@ Environment variable:
 Intended for use within the backend data pipeline.
 """
 
-from collections.abc import Iterator
+from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
 import subprocess
 import tempfile
+from typing import NamedTuple, TYPE_CHECKING
 import zipfile
 
 import dotenv
 
 from logger import logger
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
 dotenv.load_dotenv()
+
+class AuType(NamedTuple):
+    name: str
+    table: str
+    parent: str | None = None
 
 DB_STRING = os.getenv("DB_STRING")
 SQL_DIR   = Path(__file__).parent / "sql"
-AU_TYPES  = ('Država', 'Županija', 'Jedinica lokalne samouprave', 'Naselje')
-DKP_TYPES = ('katastarske_opcine', 'katastarske_cestice', 'nacini_uporabe_zgrada')
+AU_TYPES = (
+    AuType('Država', 'staging.u_country'),
+    AuType('Županija', 'staging.u_county'),
+    AuType('Jedinica lokalne samouprave', 'staging.u_municipality', 'county'),
+    AuType('Naselje', 'staging.u_settlement', 'municipality')
+)
+DKP_TYPES = (
+    'cadastral_municipalities',
+    'cadastral_parcels',
+    'buildings'
+)
 
 @contextlib.contextmanager
 def extractor(zip_path: Path) -> Iterator[Path]:
@@ -63,7 +81,7 @@ def extract_dkp(zip_path: Path) -> None:
         for dkp in DKP_TYPES:
             gml_path = temp_dir / f"{dkp}.gml"
             sql_path = SQL_DIR / f"{dkp}.sql"
-            parse_gml(gml_path, f"@{sql_path}", f"tmp_{dkp}")
+            parse_gml(gml_path, f"@{sql_path}", f"staging.u_{dkp}")
 
 def extract_au(zip_path: Path) -> None:
     """
@@ -79,8 +97,12 @@ def extract_au(zip_path: Path) -> None:
         for au_type in AU_TYPES:
             sql_query = (
                 SQL_DIR / 'administrative_units.sql'
-            ).read_text().replace('$AU_TYPE', au_type)
-            parse_gml(gml_file, sql_query, f"tmp_au_{au_type.lower()}")
+            ).read_text().replace('$AU_TYPE', au_type.name)
+            if au_type.parent:
+                sql_query = sql_query.replace('$PARENT', au_type.parent)
+            else:
+                sql_query = sql_query.replace('NULL AS $PARENT_id,', '')
+            parse_gml(gml_file, sql_query, au_type.table)
 
 def extract_ad(zip_path: Path) -> None:
     """
@@ -92,7 +114,8 @@ def extract_ad(zip_path: Path) -> None:
     """
     with extractor(zip_path) as temp_dir:
         gml_file = temp_dir / "Addresses.gml"
-        parse_gml(gml_file, f"@{SQL_DIR / 'ad.sql'}", "tmp_ad")
+        sql = SQL_DIR / 'addresses.sql'
+        parse_gml(gml_file, f"@{sql}", "staging.u_addresses")
 
 def parse_gml(gml_file: Path, sql: str, layer_name: str) -> None:
     """
@@ -109,10 +132,11 @@ def parse_gml(gml_file: Path, sql: str, layer_name: str) -> None:
         "-f", "PostgreSQL",
         DB_STRING,
         str(gml_file),
+        "-append",
         "-sql", sql,
         "-nln", layer_name,
         "-nlt", "PROMOTE_TO_MULTI",
-        "-lco", "GEOMETRY_NAME=geom",
-        "-lco", "ENCODING=UTF-8"
+        "--config", "PG_USE_COPY=YES",
+        "--config", "OGR_TRUNCATE=YES",
     ), check=True)
     logger.info(f"Parsed {gml_file.name} and loaded to PostGIS")
