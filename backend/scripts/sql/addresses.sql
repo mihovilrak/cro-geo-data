@@ -1,4 +1,9 @@
-SELECT CAST(SUBSTR(localId, instr(localId, '.') + 1) AS INTEGER) AS id,
+SELECT CAST(
+        SUBSTR(
+            localId,
+            instr(localId, '.') + 1
+        ) AS INTEGER
+    ) AS id,
     AlternateAddress AS alternate_address,
     NULL AS street_id,
     NULL AS street_name,
