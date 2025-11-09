@@ -25,6 +25,7 @@ def exception_handler(
         exc_traceback (types.TracebackType): The traceback of the exception.
     """
     if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
 
     logger.error(
