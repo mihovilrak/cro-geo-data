@@ -4,6 +4,7 @@ BEGIN;
 
     CREATE INDEX IF NOT EXISTS idx_u_addresses2_geom 
     ON staging.u_addresses2(geom) USING GIST;
+
     CREATE INDEX IF NOT EXISTS idx_u_settlements_geom 
     ON staging.u_settlements(geom) USING GIST;
 
@@ -19,5 +20,6 @@ BEGIN;
     SET settlement_id = cte.settlement_id
     FROM cte
     WHERE a.id = cte.id;
+
 END;
 $$ LANGUAGE plpgsql;

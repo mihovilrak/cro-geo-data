@@ -4,6 +4,7 @@ BEGIN;
 
     CREATE INDEX IF NOT EXISTS idx_u_settlements_geom 
     ON staging.u_settlements(geom) USING GIST;
+
     CREATE INDEX IF NOT EXISTS idx_u_municipalities_geom 
     ON staging.u_municipalities(geom) USING GIST;
 
