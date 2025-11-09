@@ -1,6 +1,12 @@
 CREATE UNLOGGED TABLE IF NOT EXISTS staging.u_addresses (
     id INT PRIMARY KEY,
-    alternate_address VARCHAR(255) NOT NULL,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    geom GEOMETRY(POINT, 3765) NOT NULL
+    alternate_address VARCHAR(255) NULL,
+    street_id INT NULL,
+    street_name VARCHAR(255) NULL,
+    house_number VARCHAR(10) NULL,
+    settlement_id INT NULL,
+    settlement_name VARCHAR(255) NULL,
+    zip INT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    geom GEOMETRY(POINT, 3765) NULL
 );
