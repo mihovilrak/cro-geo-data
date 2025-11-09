@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS country (
+CREATE TABLE IF NOT EXISTS rpj.country (
     id INT PRIMARY KEY,
     national_code INT NOT NULL,
     name VARCHAR(255) NOT NULL,

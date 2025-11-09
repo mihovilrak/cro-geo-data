@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS settlements (
+CREATE TABLE IF NOT EXISTS rpj.settlements (
     id INT PRIMARY KEY,
     national_code INT NOT NULL,
     municipality_code INT NOT NULL REFERENCES municipalities(national_code),
@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS settlements (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     geom GEOMETRY(MULTIPOLYGON, 3765) NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_settlements_geom ON settlements USING GIST (geom);
-CREATE INDEX IF NOT EXISTS idx_settlements_national_code ON settlements (national_code);
-CREATE INDEX IF NOT EXISTS idx_settlements_municipality_code ON settlements (municipality_code);
-CREATE INDEX IF NOT EXISTS idx_settlements_name ON settlements (name);
+CREATE INDEX IF NOT EXISTS idx_settlements_geom ON rpj.settlements USING GIST (geom);
+CREATE INDEX IF NOT EXISTS idx_settlements_national_code ON rpj.settlements (national_code);
+CREATE INDEX IF NOT EXISTS idx_settlements_municipality_code ON rpj.settlements (municipality_code);
+CREATE INDEX IF NOT EXISTS idx_settlements_name ON rpj.settlements (name);

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS cadastral_municipalities (
+CREATE TABLE IF NOT EXISTS dkp.cadastral_municipalities (
     id INT PRIMARY KEY,
     national_code INT NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS cadastral_municipalities (
     geom GEOMETRY(MULTIPOLYGON, 3765) NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_cadastral_municipalities_geom 
-ON cadastral_municipalities USING GIST (geom);
+ON dkp.cadastral_municipalities USING GIST (geom);
 CREATE INDEX IF NOT EXISTS idx_cadastral_municipalities_national_code 
-ON cadastral_municipalities (national_code);
+ON dkp.cadastral_municipalities (national_code);
