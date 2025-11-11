@@ -1,10 +1,10 @@
-CREATE OR REPLACE FUNCTION staging.update_tables(p_updated_at TIMESTAMP)
+CREATE OR REPLACE FUNCTION staging.update_tables()
 RETURNS VOID AS $$
 BEGIN;
 
     SELECT staging.update_staging();
 
-    IF EXISTS (SELECT 1 FROM staging.u_addresses2) THEN
+    IF EXISTS (SELECT 1 FROM staging.u_addresses) THEN
         ALTER TABLE rpj.addresses SET UNLOGGED;
 
         DROP INDEX IF EXISTS idx_addresses_street_id;
@@ -14,24 +14,25 @@ BEGIN;
         DROP CONSTRAINT IF EXISTS pk_addresses;
 
         DELETE FROM rpj.addresses
-        WHERE id IN (SELECT id FROM staging.u_addresses2);
+        WHERE id IN (SELECT id FROM staging.u_addresses);
 
         INSERT INTO rpj.addresses 
         (id, street_id, house_number, updated_at, geom)
         SELECT id, street_id, house_number, updated_at, geom
-        FROM staging.u_addresses2;
+        FROM staging.u_addresses;
+
+        TRUNCATE TABLE staging.u_addresses;
 
         CREATE INDEX idx_addresses_street_id ON rpj.addresses (street_id);
         CREATE INDEX idx_addresses_geom ON rpj.addresses USING GIST (geom);
 
         ALTER TABLE rpj.addresses ADD CONSTRAINT pk_addresses PRIMARY KEY (id);
+
         ALTER TABLE rpj.addresses ADD CONSTRAINT fk_addresses_streets 
         FOREIGN KEY (street_id) REFERENCES rpj.streets (id);
         ALTER TABLE rpj.addresses SET LOGGED;
 
         VACUUM ANALYZE rpj.addresses;
-
-        TRUNCATE TABLE staging.u_addresses2;
 
     END IF;
 
@@ -40,7 +41,6 @@ BEGIN;
 
         DROP INDEX IF EXISTS idx_streets_settlement_code;
         DROP INDEX IF EXISTS idx_streets_name;
-        DROP INDEX IF EXISTS idx_streets_geom;
 
         DROP CONSTRAINT IF EXISTS fk_streets_settlements;
         DROP CONSTRAINT IF EXISTS pk_streets;
@@ -49,22 +49,21 @@ BEGIN;
         WHERE id IN (SELECT id FROM staging.u_streets);
 
         INSERT INTO rpj.streets
-        (id, name, settlement_code, alternate_code, updated_at, extent)
-        SELECT id, name, settlement_code, alternate_code, updated_at, extent
-        FROM staging.u_streets;
+        (id, name, settlement_code, alternate_code, updated_at)
+        SELECT * FROM staging.u_streets;
+
+        TRUNCATE TABLE staging.u_streets;
 
         CREATE INDEX idx_streets_settlement_code ON rpj.streets (settlement_code);
         CREATE INDEX idx_streets_name ON rpj.streets (name);
-        CREATE INDEX idx_streets_geom ON rpj.streets USING GIST (geom);
 
         ALTER TABLE rpj.streets ADD CONSTRAINT pk_streets PRIMARY KEY (id);
+
         ALTER TABLE rpj.streets ADD CONSTRAINT fk_streets_settlements
         FOREIGN KEY (settlement_code) REFERENCES rpj.settlements (national_code);
         ALTER TABLE rpj.streets SET LOGGED;
 
         VACUUM ANALYZE rpj.streets;
-
-        TRUNCATE TABLE staging.u_streets;
 
     END IF;
 
@@ -84,8 +83,9 @@ BEGIN;
 
         INSERT INTO rpj.settlements
         (id, national_code, municipality_code, name, updated_at, geom)
-        SELECT id, national_code, municipality_code, name, updated_at, geom
-        FROM staging.u_settlements;
+        SELECT * FROM staging.u_settlements;
+
+        TRUNCATE TABLE staging.u_settlements;
 
         CREATE INDEX idx_settlements_national_code ON rpj.settlements (national_code);
         CREATE INDEX idx_settlements_municipality_code ON rpj.settlements (municipality_code);
@@ -93,13 +93,12 @@ BEGIN;
         CREATE INDEX idx_settlements_geom ON rpj.settlements USING GIST (geom);
 
         ALTER TABLE rpj.settlements ADD CONSTRAINT pk_settlements PRIMARY KEY (id);
+
         ALTER TABLE rpj.settlements ADD CONSTRAINT fk_settlements_municipalities
         FOREIGN KEY (municipality_code) REFERENCES rpj.municipalities (national_code);
         ALTER TABLE rpj.settlements SET LOGGED;
 
         VACUUM ANALYZE rpj.settlements;
-
-        TRUNCATE TABLE staging.u_settlements;
 
     END IF;
 
@@ -119,8 +118,9 @@ BEGIN;
 
         INSERT INTO rpj.municipalities
         (id, national_code, name, county_code, updated_at, geom)
-        SELECT id, national_code, name, county_code, updated_at, geom
-        FROM staging.u_municipalities;
+        SELECT * FROM staging.u_municipalities;
+
+        TRUNCATE TABLE staging.u_municipalities;
 
         CREATE INDEX idx_municipalities_national_code ON rpj.municipalities (national_code);
         CREATE INDEX idx_municipalities_county_code ON rpj.municipalities (county_code);
@@ -132,8 +132,6 @@ BEGIN;
         ALTER TABLE rpj.municipalities SET LOGGED;
 
         VACUUM ANALYZE rpj.municipalities;
-
-        TRUNCATE TABLE staging.u_municipalities;
 
     END IF;
 
@@ -152,8 +150,9 @@ BEGIN;
 
         INSERT INTO rpj.counties
         (id, national_code, name, updated_at, geom)
-        SELECT id, national_code, name, updated_at, geom
-        FROM staging.u_counties;
+        SELECT * FROM staging.u_counties;
+
+        TRUNCATE TABLE staging.u_counties;
 
         CREATE INDEX idx_counties_national_code ON rpj.counties (national_code);
         CREATE INDEX idx_counties_geom ON rpj.counties USING GIST (geom);
@@ -164,8 +163,6 @@ BEGIN;
         ALTER TABLE rpj.counties SET LOGGED;
 
         VACUUM ANALYZE rpj.counties;
-
-        TRUNCATE TABLE staging.u_counties;
 
     END IF;
 
@@ -178,15 +175,15 @@ BEGIN;
 
         INSERT INTO rpj.country
         (id, national_code, name, updated_at, geom)
-        SELECT id, national_code, name, updated_at, geom
-        FROM staging.u_country;
+        SELECT * FROM staging.u_country;
+
+        TRUNCATE TABLE staging.u_country;
 
         ALTER TABLE rpj.country ADD CONSTRAINT pk_country PRIMARY KEY (id);
         ALTER TABLE rpj.country SET LOGGED;
 
         VACUUM ANALYZE rpj.country;
 
-        TRUNCATE TABLE staging.u_country;
     END IF;
 
     IF EXISTS (SELECT 1 FROM staging.u_cadastral_municipalities) THEN
@@ -202,9 +199,10 @@ BEGIN;
         
         INSERT INTO dkp.cadastral_municipalities
         (id, national_code, name, harmonization_status, updated_at, geom)
-        SELECT id, national_code, name, harmonization_status, updated_at, geom
-        FROM staging.u_cadastral_municipalities;
-        
+        SELECT * FROM staging.u_cadastral_municipalities;
+
+        TRUNCATE TABLE staging.u_cadastral_municipalities;
+
         CREATE INDEX idx_cadastral_municipalities_national_code ON dkp.cadastral_municipalities (national_code);
         CREATE INDEX idx_cadastral_municipalities_geom ON dkp.cadastral_municipalities USING GIST (geom);
         
@@ -213,8 +211,6 @@ BEGIN;
         
         VACUUM ANALYZE dkp.cadastral_municipalities;
         
-        TRUNCATE TABLE staging.u_cadastral_municipalities;
-
     END IF;
 
     IF EXISTS (SELECT 1 FROM staging.u_cadastral_parcels) THEN
@@ -232,9 +228,10 @@ BEGIN;
         
         INSERT INTO dkp.cadastral_parcels
         (id, parcel_code, cadastral_municipality_code, graphical_area, updated_at, geom)
-        SELECT id, parcel_code, cadastral_municipality_code, graphical_area, updated_at, geom
-        FROM staging.u_cadastral_parcels;
-        
+        SELECT * FROM staging.u_cadastral_parcels;
+
+        TRUNCATE TABLE staging.u_cadastral_parcels;
+
         CREATE INDEX idx_cadastral_parcels_cadastral_municipality_code ON dkp.cadastral_parcels (cadastral_municipality_code);
         CREATE INDEX idx_cadastral_parcels_parcel_code ON dkp.cadastral_parcels (parcel_code);
         CREATE INDEX idx_cadastral_parcels_geom ON dkp.cadastral_parcels USING GIST (geom);
@@ -245,8 +242,6 @@ BEGIN;
         ALTER TABLE dkp.cadastral_parcels SET LOGGED;
 
         VACUUM ANALYZE dkp.cadastral_parcels;
-
-        TRUNCATE TABLE staging.u_cadastral_parcels;
 
     END IF;
     IF EXISTS (SELECT 1 FROM staging.u_buildings) THEN
@@ -266,9 +261,10 @@ BEGIN;
         
         INSERT INTO dkp.buildings
         (id, building_number, usage_code, cadastral_municipality_code, updated_at, geom)
-        SELECT id, building_number, usage_code, cadastral_municipality_code, updated_at, geom
-        FROM staging.u_buildings;
+        SELECT * FROM staging.u_buildings;
         
+        TRUNCATE TABLE staging.u_buildings;
+
         CREATE INDEX idx_buildings_cadastral_municipality_code ON dkp.buildings (cadastral_municipality_code);
         CREATE INDEX idx_buildings_building_number ON dkp.buildings (building_number);
         CREATE INDEX idx_buildings_usage_code ON dkp.buildings (usage_code);
@@ -283,8 +279,6 @@ BEGIN;
         
         VACUUM ANALYZE dkp.buildings;
         
-        TRUNCATE TABLE staging.u_buildings;
-
     END IF;
 END;
 $$ LANGUAGE plpgsql;
