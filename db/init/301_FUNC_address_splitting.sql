@@ -96,7 +96,7 @@ BEGIN
             AND tt.idx < h.house_idx
         )
         ELSE NULL
-        END AS street_name,
+    END AS street_name,
     (
         SELECT token 
         FROM staging.tmp_tokens tt 
@@ -129,22 +129,7 @@ BEGIN
     ON COMMIT DROP;
     CREATE INDEX ON staging.tmp_parsed(id);
 
-    DROP TABLE IF EXISTS staging.u_addresses2;
-    CREATE UNLOGGED TABLE staging.u_addresses2 AS
-    SELECT id,
-        NULL::INT AS street_id,
-        NULL::VARCHAR(255) AS street_name,
-        NULL::VARCHAR(10) AS house_number,
-        NULL::INT AS settlement_id,
-        NULL::VARCHAR(255) AS settlement,
-        NULL::INT AS zip,
-        updated_at,
-        geom
-    FROM staging.u_addresses;
-
-    TRUNCATE TABLE staging.u_addresses;
-
-    UPDATE staging.u_addresses2
+    UPDATE staging.u_addresses
     SET street_name = tp.street,
         house_number = tp.house_number,
         settlement_name = trim(
