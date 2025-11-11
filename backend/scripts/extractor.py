@@ -35,6 +35,10 @@ class AuType(NamedTuple):
     table: str
     parent: str | None = None
 
+class AdType(NamedTuple):
+    name: str
+    gml_file: str
+
 DB_STRING = os.getenv("DB_STRING")
 SQL_DIR   = Path(__file__).parent / "sql"
 AU_TYPES = (
@@ -47,6 +51,11 @@ DKP_TYPES = (
     'cadastral_municipalities',
     'cadastral_parcels',
     'buildings'
+)
+AD_TYPES = (
+    AdType('addresses', 'Address.gml'),
+    AdType('streets', 'ThoroughfareName.gml'),
+    AdType('postal_offices', 'PostalDescriptor.gml')
 )
 
 @contextlib.contextmanager
@@ -106,16 +115,19 @@ def extract_au(zip_path: Path) -> None:
 
 def extract_ad(zip_path: Path) -> None:
     """
-    Extracts 'Addresses.gml' from the given ZIP archive,
-    parses the addresses and loads them into PostGIS.
+    Extracts 'Address.gml', 'ThoroughfareName.gml', 
+    and 'PostalDescriptor.gml' from the given ZIP archive,
+    parses them and loads them into PostGIS.
 
     Args:
-        zip_path (Path): Path to the ZIP archive containing Addresses.gml.
+        zip_path (Path): Path to the ZIP archive containing 
+        Address.gml, ThoroughfareName.gml, and PostalDescriptor.gml files.
     """
     with extractor(zip_path) as temp_dir:
-        gml_file = temp_dir / "Addresses.gml"
-        sql = SQL_DIR / 'addresses.sql'
-        parse_gml(gml_file, f"@{sql}", "staging.u_addresses")
+        for ad_type in AD_TYPES:
+            gml_file = temp_dir / ad_type.gml_file
+            sql = SQL_DIR / f'{ad_type.name}.sql'
+            parse_gml(gml_file, f"@{sql}", f"staging.u_{ad_type.name}")
 
 def parse_gml(gml_file: Path, sql: str, layer_name: str) -> None:
     """
@@ -135,8 +147,7 @@ def parse_gml(gml_file: Path, sql: str, layer_name: str) -> None:
         "-append",
         "-sql", sql,
         "-nln", layer_name,
-        "-nlt", "PROMOTE_TO_MULTI",
-        "--config", "PG_USE_COPY=YES",
-        "--config", "OGR_TRUNCATE=YES",
+        "-lco", "ENCODING=UTF-8",
+        "--config", "PG_USE_COPY=YES"
     ), check=True)
     logger.info(f"Parsed {gml_file.name} and loaded to PostGIS")
