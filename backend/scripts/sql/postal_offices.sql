@@ -6,6 +6,5 @@ SELECT CAST(
     ) AS id,
     postCode AS postal_code,
     text AS name,
-    CURRENT_TIMESTAMP AS updated_at,
-    NULL AS geom
+    CURRENT_TIMESTAMP AS updated_at
 FROM PostalDescriptor;
