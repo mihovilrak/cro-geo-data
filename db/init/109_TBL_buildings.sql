@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS dkp.buildings (
     cadastral_municipality_code INT NOT NULL 
         REFERENCES dkp.cadastral_municipalities(national_code),
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    geom GEOMETRY(POLYGON, 3765) NOT NULL
+    geom GEOMETRY(MULTIPOLYGON, 3765) NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_buildings_geom 
 ON dkp.buildings USING GIST (geom);
