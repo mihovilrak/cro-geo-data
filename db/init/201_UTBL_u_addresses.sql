@@ -1,7 +1,7 @@
 CREATE UNLOGGED TABLE IF NOT EXISTS staging.u_addresses (
-    id INT PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     alternate_address VARCHAR(255) NULL,
-    street_id INT NULL,
+    street_id BIGINT NULL,
     street_name VARCHAR(255) NULL,
     house_number VARCHAR(10) NULL,
     settlement_id INT NULL,
