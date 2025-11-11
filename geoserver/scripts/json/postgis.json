@@ -1,0 +1,15 @@
+{
+    "dataStore": {
+      "name": "postgis",
+      "connectionParameters": {
+        "entry": [
+          {"@key":"host","$":"${DB_HOST}"},
+          {"@key":"port","$":"${DB_PORT}"},
+          {"@key":"database","$":"${DB_NAME}"},
+          {"@key":"user","$":"${DB_USER}"},
+          {"@key":"passwd","$":"${DB_PASSWORD}"},
+          {"@key":"dbtype","$":"postgis"}
+        ]
+      }
+    }
+  }
