@@ -12,6 +12,8 @@ BEGIN;
     DROP TABLE IF EXISTS dkp.cadastral_parcels;
     DROP TABLE IF EXISTS dkp.buildings;
 
+    SELECT staging.update_staging();
+
     CREATE UNLOGGED TABLE rpj.addresses AS
     SELECT id,
         street_id,
