@@ -4,6 +4,7 @@ SELECT CAST(
             instr(localId, '.') + 1
         ) AS INTEGER
     ) AS id,
+    CAST(alternativeIdentifier AS INTEGER) AS unique_identifier,
     text AS name,
     CAST(
         SUBSTR(
@@ -12,7 +13,6 @@ SELECT CAST(
             6
         ) AS INTEGER
     ) AS settlement_code,
-    CAST(alternativeIdentifier AS INTEGER) AS alternate_code,
-    CURRENT_TIMESTAMP AS updated_at,
-    NULL AS geom
+    NULL AS postal_code,
+    CURRENT_TIMESTAMP AS updated_at
 FROM Street;
