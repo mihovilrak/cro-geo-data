@@ -1,0 +1,52 @@
+post_request() {
+    curl -X POST -u ${GEOSERVER_USER}:${GEOSERVER_PASSWORD} \
+    "${GEOSERVER_URL}/geoserver/rest/${1}" \
+    -H  "accept: text/html" \
+    -H  "content-type: application/json" \
+    -d ${2}
+}
+
+post_sld() {
+    curl -X POST -u ${GEOSERVER_USER}:${GEOSERVER_PASSWORD} \
+    "${GEOSERVER_URL}/geoserver/rest/styles" \
+    -H  "accept: text/plain" \
+    -H  "content-type: application/vnd.ogc.sld+xml" \
+    -H  "Content-Type: SLD" \
+    -d @sld/${1}
+}
+
+ws = "workspaces"
+ds = "${ws}/cro-geo-data/datastores"
+ft = "${ds}/postgis/featuretypes"
+
+requests = ("${ws}?default=true|json/workspace.json" \
+"${ds}|json/postgis.json" \
+"${ft}/addresses|json/addresses.json" \
+"${ft}/postal_offices|json/postal_offices.json" \
+"${ft}/streets|json/streets.json" \
+"${ft}/municipalities|json/municipalities.json" \
+"${ft}/settlements|json/settlements.json" \
+"${ft}/counties|json/counties.json" \
+"${ft}/country|json/country.json" \
+"${ft}/cadastral_municipalities|json/cadastral_municipalities.json" \
+"${ft}/cadastral_parcels|json/cadastral_parcels.json" \
+"${ft}/buildings|json/buildings.json")
+
+slds = ("house_numbers.sld" "parcels.sld")
+
+for request in "${requests[@]}"; do
+    IFS='|' read -r request_url request_file <<< "$request"
+    if [ "$request_file" = "json/postgis.json" ]; then
+        post_request "$request_url" "$(sed 's/DB_NAME/${DB_NAME}/g' ${request_file} \
+        | sed 's/DB_HOST/${DB_HOST}/g' \
+        | sed 's/DB_PORT/${DB_PORT}/g' \
+        | sed 's/DB_USER/${DB_USER}/g' \
+        | sed 's/DB_PASSWORD/${DB_PASSWORD}/g')"
+    else
+        post_request "$request_url" "@${request_file}"
+    fi
+done
+
+for sld in "${slds[@]}"; do
+    post_sld "$sld"
+done
