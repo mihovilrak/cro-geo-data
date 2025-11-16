@@ -14,7 +14,7 @@ BEGIN
     FROM staging.u_municipalities m
     LEFT JOIN staging.u_counties c
       ON c.geom && m.geom
-     AND ST_Contains(c.geom, m.geom);
+     AND ST_Contains(c.geom, m.geom)
     )
     UPDATE staging.u_municipalities m
     SET county_id = cte.county_id

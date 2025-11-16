@@ -16,8 +16,7 @@ BEGIN
         ' ',
         'g'
       )
-    )
-    ON COMMIT DROP;
+    );
 
     CREATE INDEX ON staging.u_streets_tmp (settlement_id, norm_name);
 
@@ -43,5 +42,7 @@ BEGIN
     WHERE a.id = upd.a_id;
 
     ANALYZE staging.u_addresses;
+
+    DROP TABLE IF EXISTS staging.u_streets_tmp;
 END;
 $$ LANGUAGE plpgsql;

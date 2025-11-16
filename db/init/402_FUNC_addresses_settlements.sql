@@ -14,7 +14,7 @@ BEGIN
     FROM staging.u_addresses a
     LEFT JOIN staging.u_settlements s
       ON s.geom && a.geom
-     AND ST_Contains(s.geom, a.geom);
+     AND ST_Contains(s.geom, a.geom)
     )
     UPDATE staging.u_addresses a
     SET settlement_id = cte.settlement_id

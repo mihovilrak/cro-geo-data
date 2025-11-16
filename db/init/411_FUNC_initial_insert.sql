@@ -183,8 +183,6 @@ BEGIN
     CREATE INDEX idx_addresses_geom 
     ON rpj.addresses USING GIST (geom);
 
-    ALTER TABLE rpj.addresses LOGGED;
-
     VACUUM ANALYZE rpj.addresses;
 
     DROP INDEX IF EXISTS idx_cadastral_municipalities_national_code;

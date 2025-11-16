@@ -15,8 +15,7 @@ BEGIN
             'g'
         ), 
         '\s+'
-    ) WITH ORDINALITY AS t(token, idx)
-    ON COMMIT DROP;
+    ) WITH ORDINALITY AS t(token, idx);
 
     CREATE INDEX ON staging.tmp_tokens(id);
     CREATE INDEX ON staging.tmp_tokens(id, idx);
@@ -25,8 +24,7 @@ BEGIN
     SELECT id, min(idx) AS zip_idx
     FROM staging.tmp_tokens
     WHERE token ~ '^[0-9]{5}$'
-    GROUP BY id
-    ON COMMIT DROP;
+    GROUP BY id;
     CREATE INDEX ON staging.tmp_zip(id);
 
     CREATE TEMPORARY TABLE staging.tmp_digits_before_zip AS
@@ -39,8 +37,7 @@ BEGIN
            t.token ~ '^\(.*\)$' 
         OR t.token ~ '^[0-9]+-[0-9]+$' 
         OR t.token ~ '^\([0-9]+-[0-9]+\)$'
-    )
-    ON COMMIT DROP;
+    );
 
     CREATE INDEX ON staging.tmp_digits_before_zip(id);
     CREATE INDEX ON staging.tmp_digits_before_zip(id, idx);
@@ -50,8 +47,7 @@ BEGIN
         idx,
         token,
         row_number() OVER (PARTITION BY id ORDER BY idx DESC) AS rn
-    FROM staging.tmp_digits_before_zip
-    ON COMMIT DROP;
+    FROM staging.tmp_digits_before_zip;
     CREATE INDEX ON staging.tmp_digits_ranked(id, rn);
 
     CREATE TEMPORARY TABLE staging.tmp_house_idx AS
@@ -75,8 +71,7 @@ BEGIN
     FROM (
         SELECT DISTINCT id 
         FROM staging.tmp_tokens
-    ) d
-    ON COMMIT DROP;
+    ) d;
     CREATE INDEX ON staging.tmp_house_idx(id);
 
     CREATE TEMPORARY TABLE staging.tmp_parsed AS
@@ -116,13 +111,12 @@ BEGIN
         WHERE tt.id = p.id 
         AND tt.idx = z.zip_idx 
         LIMIT 1
-    ) AS zip::INT
+    ) AS zip
     FROM (
         SELECT DISTINCT id 
         FROM staging.tmp_tokens
     ) p
-    LEFT JOIN staging.tmp_house_idx h ON h.id = p.id
-    ON COMMIT DROP;
+    LEFT JOIN staging.tmp_house_idx h ON h.id = p.id;
     CREATE INDEX ON staging.tmp_parsed(id);
 
     UPDATE staging.u_addresses
@@ -131,7 +125,7 @@ BEGIN
         settlement_name = trim(
             both ' ,.' 
             FROM regexp_replace(
-                coalesce(tp.settlement,''), 
+                coalesce(tp.settlement_name,''), 
                 '\s*\(.*\)\s*$',
                 '',
                 'g'
@@ -140,6 +134,13 @@ BEGIN
         zip = tp.zip::INT
     FROM staging.tmp_parsed tp
     WHERE staging.u_addresses.id = tp.id;
+
+    DROP TABLE IF EXISTS staging.tmp_parsed;
+    DROP TABLE IF EXISTS staging.tmp_house_idx;
+    DROP TABLE IF EXISTS staging.tmp_digits_ranked;
+    DROP TABLE IF EXISTS staging.tmp_digits_before_zip;
+    DROP TABLE IF EXISTS staging.tmp_zip;
+    DROP TABLE IF EXISTS staging.tmp_tokens;
 
 END;
 $$ LANGUAGE plpgsql;

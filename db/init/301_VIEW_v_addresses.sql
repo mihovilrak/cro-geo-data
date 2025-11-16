@@ -3,10 +3,11 @@ CREATE OR REPLACE VIEW gs.v_addresses AS
         a.street_id,
         str.name AS street_name,
         a.house_number,
-        str.settlement_id,
+        str.settlement_code,
         stl.name AS settlement_name,
         str.postal_code AS zip,
         pos.name AS postal_office_name,
+        m.name AS municipality_name,
         cnt.name AS county_name,
         concat(
             str.name,
@@ -22,4 +23,5 @@ CREATE OR REPLACE VIEW gs.v_addresses AS
     LEFT JOIN rpj.streets str ON a.street_id = str.id
     LEFT JOIN rpj.settlements stl ON str.settlement_code = stl.national_code
     LEFT JOIN rpj.postal_offices pos ON str.postal_code = pos.postal_code
-    LEFT JOIN rpj.counties cnt ON stl.county_code = cnt.national_code;
+    LEFT JOIN rpj.municipalities m ON stl.municipality_code = m.national_code
+    LEFT JOIN rpj.counties cnt ON m.county_code = cnt.national_code;

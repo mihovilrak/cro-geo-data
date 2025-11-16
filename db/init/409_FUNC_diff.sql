@@ -9,29 +9,28 @@ RETURNS TABLE(
     deleted INTEGER,
     updated INTEGER
 ) AS $$
-BEGIN
 
-    DECLARE 
-        columns TEXT[];
-        inserted INTEGER;
-        deleted INTEGER;
-        updated INTEGER;
+DECLARE 
+    columns TEXT[];
+    inserted INTEGER;
+    deleted INTEGER;
+    updated INTEGER;
+
+BEGIN
 
     SELECT array_agg(column_name) INTO columns
     FROM information_schema.columns
     WHERE table_schema = schema_name
-    AND table_name = table_name
+    AND table_name = table_old
     AND column_name NOT IN ('id', 'created_at', 'updated_at');
 
     CREATE TEMPORARY TABLE hashes_a AS
-    SELECT * FROM md5_hash(table_old, id, columns)
-    ORDER BY id
-    ON COMMIT DROP;
+    SELECT * FROM staging.md5_hash(schema_name || '.' || table_old, 'id', columns)
+    ORDER BY id;
 
     CREATE TEMPORARY TABLE hashes_b AS
-    SELECT * FROM md5_hash(table_new, id, columns)
-    ORDER BY id
-    ON COMMIT DROP;
+    SELECT * FROM staging.md5_hash(schema_name || '.' || table_new, 'id', columns)
+    ORDER BY id;
 
     IF schema_name = 'dkp'
     OR table_old IN ('streets', 'postal_offices') THEN
@@ -66,6 +65,9 @@ BEGIN
 
     RETURN QUERY
     SELECT inserted, deleted, updated;
+
+    DROP TABLE IF EXISTS hashes_b;
+    DROP TABLE IF EXISTS hashes_a;
 
 END;
 $$ LANGUAGE plpgsql;
