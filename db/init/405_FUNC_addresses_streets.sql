@@ -1,9 +1,9 @@
 CREATE OR REPLACE FUNCTION staging.addresses_streets()
 RETURNS void
 AS $$
-BEGIN;
+BEGIN
 
-    CREATE UNLOGGED TABLE staging.u_streets_tmp AS
+    CREATE TEMPORARY TABLE staging.u_streets_tmp AS
       SELECT
         MIN(id) AS street_id,
         settlement_id,

@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS rpj.municipalities (
     id INT PRIMARY KEY,
     national_code INT NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
-    county_code INT NOT NULL REFERENCES counties(national_code),
+    county_code INT NOT NULL REFERENCES rpj.counties(national_code),
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     geom GEOMETRY(MULTIPOLYGON, 3765) NOT NULL
 );

@@ -1,4 +1,4 @@
-CREATE OR REPLACE MATERIALIZED VIEW gs.mv_streets AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS gs.mv_streets AS
     SELECT s.id,
         s.name,
         s.alternate_code,

@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION staging.update_staging()
 RETURNS VOID AS $$
-BEGIN;
+BEGIN
 
     SELECT staging.address_splitting();
     SELECT staging.addresses_settlements();

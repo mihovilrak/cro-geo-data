@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS rpj.settlements (
     id INT PRIMARY KEY,
     national_code INT NOT NULL UNIQUE,
-    municipality_code INT NOT NULL REFERENCES municipalities(national_code),
+    municipality_code INT NOT NULL REFERENCES rpj.municipalities(national_code),
     name VARCHAR(255) NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     geom GEOMETRY(MULTIPOLYGON, 3765) NOT NULL

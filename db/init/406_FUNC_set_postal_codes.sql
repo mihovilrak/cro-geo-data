@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION staging.set_postal_codes()
 RETURNS VOID AS $$
-BEGIN;
+BEGIN
 
     WITH cte AS (
         SELECT street_id, postal_code

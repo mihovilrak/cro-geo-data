@@ -1,12 +1,12 @@
 CREATE OR REPLACE FUNCTION staging.addresses_settlements()
 RETURNS VOID AS $$
-BEGIN;
+BEGIN
 
     CREATE INDEX IF NOT EXISTS idx_u_addresses_geom 
-    ON staging.u_addresses(geom) USING GIST;
+    ON staging.u_addresses USING GIST (geom);
 
     CREATE INDEX IF NOT EXISTS idx_u_settlements_geom 
-    ON staging.u_settlements(geom) USING GIST;
+    ON staging.u_settlements USING GIST (geom);
 
     WITH cte AS (
     SELECT a.id,

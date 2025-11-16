@@ -2,30 +2,26 @@ CREATE OR REPLACE FUNCTION staging.address_splitting()
 RETURNS VOID AS $$
 BEGIN
 
-    CREATE UNLOGGED TABLE staging.tmp_tokens AS
+    CREATE TEMPORARY TABLE staging.tmp_tokens AS
     SELECT id,
         idx,
         token
-    FROM (
-    SELECT id,
-        regexp_split_to_table(
-            regexp_replace(
-                coalesce(alternate_address, ''), 
-                '[,;]+',
-                ' ',
-                'g'
-            ), 
-            '\s+'
-        ) WITH ORDINALITY
-        AS t(token, idx)
-    FROM staging.u_addresses
-    ) tokens
+        FROM staging.u_addresses
+    CROSS JOIN LATERAL regexp_split_to_table(
+        regexp_replace(
+            coalesce(alternate_address, ''), 
+            '[,;]+',
+            ' ',
+            'g'
+        ), 
+        '\s+'
+    ) WITH ORDINALITY AS t(token, idx)
     ON COMMIT DROP;
 
     CREATE INDEX ON staging.tmp_tokens(id);
     CREATE INDEX ON staging.tmp_tokens(id, idx);
 
-    CREATE UNLOGGED TABLE staging.tmp_zip AS
+    CREATE TEMPORARY TABLE staging.tmp_zip AS
     SELECT id, min(idx) AS zip_idx
     FROM staging.tmp_tokens
     WHERE token ~ '^[0-9]{5}$'
@@ -33,10 +29,10 @@ BEGIN
     ON COMMIT DROP;
     CREATE INDEX ON staging.tmp_zip(id);
 
-    CREATE UNLOGGED TABLE tmp_digits_before_zip AS
+    CREATE TEMPORARY TABLE staging.tmp_digits_before_zip AS
     SELECT t.id, t.idx, t.token
     FROM staging.tmp_tokens t
-    JOIN tmp_zip z ON z.id = t.id
+    JOIN staging.tmp_zip z ON z.id = t.id
     WHERE t.idx < z.zip_idx
     AND t.token ~ '^[0-9]'
     AND NOT (
@@ -49,7 +45,7 @@ BEGIN
     CREATE INDEX ON staging.tmp_digits_before_zip(id);
     CREATE INDEX ON staging.tmp_digits_before_zip(id, idx);
 
-    CREATE UNLOGGED TABLE staging.tmp_digits_ranked AS
+    CREATE TEMPORARY TABLE staging.tmp_digits_ranked AS
     SELECT id,
         idx,
         token,
@@ -58,7 +54,7 @@ BEGIN
     ON COMMIT DROP;
     CREATE INDEX ON staging.tmp_digits_ranked(id, rn);
 
-    CREATE UNLOGGED TABLE staging.tmp_house_idx AS
+    CREATE TEMPORARY TABLE staging.tmp_house_idx AS
     SELECT id,
         COALESCE(
             (
@@ -83,7 +79,7 @@ BEGIN
     ON COMMIT DROP;
     CREATE INDEX ON staging.tmp_house_idx(id);
 
-    CREATE UNLOGGED TABLE staging.tmp_parsed AS
+    CREATE TEMPORARY TABLE staging.tmp_parsed AS
     SELECT p.id,
     CASE 
         WHEN h.house_idx IS NULL 
@@ -130,7 +126,7 @@ BEGIN
     CREATE INDEX ON staging.tmp_parsed(id);
 
     UPDATE staging.u_addresses
-    SET street_name = tp.street,
+    SET street_name = tp.street_name,
         house_number = tp.house_number,
         settlement_name = trim(
             both ' ,.' 
@@ -143,7 +139,7 @@ BEGIN
         ),
         zip = tp.zip::INT
     FROM staging.tmp_parsed tp
-    WHERE staging.u_addresses2.id = tp.id;
+    WHERE staging.u_addresses.id = tp.id;
 
 END;
 $$ LANGUAGE plpgsql;

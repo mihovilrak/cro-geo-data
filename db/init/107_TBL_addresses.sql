@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS rpj.addresses (
     id BIGINT PRIMARY KEY,
-    street_id BIGINT NOT NULL REFERENCES streets(id),
+    street_id BIGINT NOT NULL REFERENCES rpj.streets(id),
     house_number VARCHAR(10) NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     geom GEOMETRY(POINT, 3765) NOT NULL
