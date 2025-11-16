@@ -8,61 +8,67 @@ BEGIN;
     DROP TABLE IF EXISTS rpj.municipalities;
     DROP TABLE IF EXISTS rpj.counties;
     DROP TABLE IF EXISTS rpj.country;
-    DROP TABLE IF EXISTS dkp.cadastral_municipalities;
-    DROP TABLE IF EXISTS dkp.cadastral_parcels;
     DROP TABLE IF EXISTS dkp.buildings;
+    DROP TABLE IF EXISTS dkp.cadastral_parcels;
+    DROP TABLE IF EXISTS dkp.cadastral_municipalities;
 
     SELECT staging.update_staging();
 
-    CREATE UNLOGGED TABLE rpj.addresses AS
-    SELECT id,
-        street_id,
-        house_number,
-        updated_at,
-        geom
-    FROM staging.u_addresses;
-
-    TRUNCATE TABLE staging.u_addresses;
-
-    ALTER TABLE rpj.addresses 
-    ADD CONSTRAINT pk_addresses PRIMARY KEY (id);
-
-    ALTER TABLE rpj.addresses 
-    ADD CONSTRAINT fk_addresses_streets 
-    FOREIGN KEY (street_id) REFERENCES rpj.streets (id);
-
-    CREATE INDEX idx_addresses_street_id 
-    ON rpj.addresses (street_id);
-
-    CREATE INDEX idx_addresses_geom 
-    ON rpj.addresses USING GIST (geom);
-
-    ALTER TABLE rpj.addresses LOGGED;
-
-    VACUUM ANALYZE rpj.addresses;
-
-    CREATE UNLOGGED TABLE rpj.streets AS
-    SELECT * FROM staging.u_streets;
-
-    TRUNCATE TABLE staging.u_streets;
-
-    ALTER TABLE rpj.streets 
-    ADD CONSTRAINT pk_streets PRIMARY KEY (id);
+    CREATE UNLOGGED TABLE rpj.country AS
+    SELECT * FROM staging.u_country;
     
-    ALTER TABLE rpj.streets 
-    ADD CONSTRAINT fk_streets_settlements 
-    FOREIGN KEY (settlement_code)
-    REFERENCES rpj.settlements (national_code);
+    TRUNCATE TABLE staging.u_country;
 
-    CREATE INDEX idx_streets_settlement_code 
-    ON rpj.streets (settlement_code);
+    ALTER TABLE rpj.country 
+    ADD CONSTRAINT pk_country PRIMARY KEY (id);
 
-    CREATE INDEX idx_streets_name 
-    ON rpj.streets (name);
+    ALTER TABLE rpj.country LOGGED;
+    
+    VACUUM ANALYZE rpj.country;
 
-    ALTER TABLE rpj.streets LOGGED;
+    CREATE UNLOGGED TABLE rpj.counties AS
+    SELECT * FROM staging.u_counties;
+    
+    TRUNCATE TABLE staging.u_counties;
 
-    VACUUM ANALYZE rpj.streets;
+    ALTER TABLE rpj.counties 
+    ADD CONSTRAINT pk_counties PRIMARY KEY (id);
+    
+    CREATE INDEX idx_counties_national_code
+    ON rpj.counties (national_code);
+
+    CREATE INDEX idx_counties_geom 
+    ON rpj.counties USING GIST (geom);
+    
+    ALTER TABLE rpj.counties LOGGED;
+    
+    VACUUM ANALYZE rpj.counties;
+
+    CREATE UNLOGGED TABLE rpj.municipalities AS
+    SELECT * FROM staging.u_municipalities;
+
+    TRUNCATE TABLE staging.u_municipalities;
+
+    ALTER TABLE rpj.municipalities 
+    ADD CONSTRAINT pk_municipalities PRIMARY KEY (id);
+
+    ALTER TABLE rpj.municipalities 
+    ADD CONSTRAINT fk_municipalities_counties 
+    FOREIGN KEY (county_code)
+    REFERENCES rpj.counties (national_code);
+
+    CREATE INDEX idx_municipalities_national_code 
+    ON rpj.municipalities (national_code);
+
+    CREATE INDEX idx_municipalities_county_code 
+    ON rpj.municipalities (county_code);
+
+    CREATE INDEX idx_municipalities_geom 
+    ON rpj.municipalities USING GIST (geom);
+
+    ALTER TABLE rpj.municipalities LOGGED;
+
+    VACUUM ANALYZE rpj.municipalities;
 
     CREATE UNLOGGED TABLE rpj.settlements AS
     SELECT * FROM staging.u_settlements;
@@ -93,61 +99,55 @@ BEGIN;
 
     VACUUM ANALYZE rpj.settlements;
 
-    CREATE UNLOGGED TABLE rpj.municipalities AS
-    SELECT * FROM staging.u_municipalities;
+    CREATE UNLOGGED TABLE rpj.streets AS
+    SELECT * FROM staging.u_streets;
 
-    TRUNCATE TABLE staging.u_municipalities;
+    TRUNCATE TABLE staging.u_streets;
 
-    ALTER TABLE rpj.municipalities 
-    ADD CONSTRAINT pk_municipalities PRIMARY KEY (id);
-
-    ALTER TABLE rpj.municipalities 
-    ADD CONSTRAINT fk_municipalities_counties 
-    FOREIGN KEY (county_code)
-    REFERENCES rpj.counties (national_code);
-
-    CREATE INDEX idx_municipalities_national_code 
-    ON rpj.municipalities (national_code);
-
-    CREATE INDEX idx_municipalities_county_code 
-    ON rpj.municipalities (county_code);
-
-    CREATE INDEX idx_municipalities_geom 
-    ON rpj.municipalities USING GIST (geom);
-
-    ALTER TABLE rpj.municipalities LOGGED;
-
-    VACUUM ANALYZE rpj.municipalities;
-
-    CREATE UNLOGGED TABLE rpj.counties AS
-    SELECT * FROM staging.u_counties;
+    ALTER TABLE rpj.streets 
+    ADD CONSTRAINT pk_streets PRIMARY KEY (id);
     
-    TRUNCATE TABLE staging.u_counties;
+    ALTER TABLE rpj.streets 
+    ADD CONSTRAINT fk_streets_settlements 
+    FOREIGN KEY (settlement_code)
+    REFERENCES rpj.settlements (national_code);
 
-    ALTER TABLE rpj.counties 
-    ADD CONSTRAINT pk_counties PRIMARY KEY (id);
-    
-    CREATE INDEX idx_counties_national_code
-    ON rpj.counties (national_code);
+    CREATE INDEX idx_streets_settlement_code 
+    ON rpj.streets (settlement_code);
 
-    CREATE INDEX idx_counties_geom 
-    ON rpj.counties USING GIST (geom);
-    
-    ALTER TABLE rpj.counties LOGGED;
-    
-    VACUUM ANALYZE rpj.counties;
-    
-    CREATE UNLOGGED TABLE rpj.country AS
-    SELECT * FROM staging.u_country;
-    
-    TRUNCATE TABLE staging.u_country;
+    CREATE INDEX idx_streets_name 
+    ON rpj.streets (name);
 
-    ALTER TABLE rpj.country 
-    ADD CONSTRAINT pk_country PRIMARY KEY (id);
+    ALTER TABLE rpj.streets LOGGED;
 
-    ALTER TABLE rpj.country LOGGED;
-    
-    VACUUM ANALYZE rpj.country;
+    VACUUM ANALYZE rpj.streets;
+
+    CREATE UNLOGGED TABLE rpj.addresses AS
+    SELECT id,
+        street_id,
+        house_number,
+        updated_at,
+        geom
+    FROM staging.u_addresses;
+
+    TRUNCATE TABLE staging.u_addresses;
+
+    ALTER TABLE rpj.addresses 
+    ADD CONSTRAINT pk_addresses PRIMARY KEY (id);
+
+    ALTER TABLE rpj.addresses 
+    ADD CONSTRAINT fk_addresses_streets 
+    FOREIGN KEY (street_id) REFERENCES rpj.streets (id);
+
+    CREATE INDEX idx_addresses_street_id 
+    ON rpj.addresses (street_id);
+
+    CREATE INDEX idx_addresses_geom 
+    ON rpj.addresses USING GIST (geom);
+
+    ALTER TABLE rpj.addresses LOGGED;
+
+    VACUUM ANALYZE rpj.addresses;
 
     CREATE UNLOGGED TABLE dkp.cadastral_municipalities AS
     SELECT * FROM staging.u_cadastral_municipalities;
