@@ -1,37 +1,28 @@
 CREATE OR REPLACE FUNCTION staging.initial_insert()
 RETURNS VOID AS $$
-BEGIN;
-
-    DROP TABLE IF EXISTS rpj.addresses;
-    DROP TABLE IF EXISTS rpj.streets;
-    DROP TABLE IF EXISTS rpj.settlements;
-    DROP TABLE IF EXISTS rpj.municipalities;
-    DROP TABLE IF EXISTS rpj.counties;
-    DROP TABLE IF EXISTS rpj.country;
-    DROP TABLE IF EXISTS dkp.buildings;
-    DROP TABLE IF EXISTS dkp.cadastral_parcels;
-    DROP TABLE IF EXISTS dkp.cadastral_municipalities;
+BEGIN
 
     SELECT staging.update_staging();
 
-    CREATE UNLOGGED TABLE rpj.country AS
+    INSERT INTO rpj.country
     SELECT * FROM staging.u_country;
     
     TRUNCATE TABLE staging.u_country;
 
-    ALTER TABLE rpj.country 
-    ADD CONSTRAINT pk_country PRIMARY KEY (id);
-
-    ALTER TABLE rpj.country LOGGED;
-    
     VACUUM ANALYZE rpj.country;
 
-    CREATE UNLOGGED TABLE rpj.counties AS
+    DROP INDEX IF EXISTS idx_counties_national_code;
+    DROP INDEX IF EXISTS idx_counties_geom;
+
+    ALTER TABLE rpj.counties 
+    DROP CONSTRAINT pk_counties;
+
+    INSERT INTO rpj.counties
     SELECT * FROM staging.u_counties;
     
     TRUNCATE TABLE staging.u_counties;
 
-    ALTER TABLE rpj.counties 
+    ALTER TABLE rpj.counties
     ADD CONSTRAINT pk_counties PRIMARY KEY (id);
     
     CREATE INDEX idx_counties_national_code
@@ -40,11 +31,19 @@ BEGIN;
     CREATE INDEX idx_counties_geom 
     ON rpj.counties USING GIST (geom);
     
-    ALTER TABLE rpj.counties LOGGED;
-    
     VACUUM ANALYZE rpj.counties;
 
-    CREATE UNLOGGED TABLE rpj.municipalities AS
+    DROP INDEX IF EXISTS idx_municipalities_national_code;
+    DROP INDEX IF EXISTS idx_municipalities_county_code;
+    DROP INDEX IF EXISTS idx_municipalities_geom;
+
+    ALTER TABLE rpj.municipalities 
+    DROP CONSTRAINT fk_municipalities_counties;
+
+    ALTER TABLE rpj.municipalities 
+    DROP CONSTRAINT pk_municipalities;
+
+    INSERT INTO rpj.municipalities
     SELECT * FROM staging.u_municipalities;
 
     TRUNCATE TABLE staging.u_municipalities;
@@ -66,11 +65,20 @@ BEGIN;
     CREATE INDEX idx_municipalities_geom 
     ON rpj.municipalities USING GIST (geom);
 
-    ALTER TABLE rpj.municipalities LOGGED;
-
     VACUUM ANALYZE rpj.municipalities;
 
-    CREATE UNLOGGED TABLE rpj.settlements AS
+    DROP INDEX IF EXISTS idx_settlements_national_code;
+    DROP INDEX IF EXISTS idx_settlements_municipality_code;
+    DROP INDEX IF EXISTS idx_settlements_name;
+    DROP INDEX IF EXISTS idx_settlements_geom;
+
+    ALTER TABLE rpj.settlements 
+    DROP CONSTRAINT fk_settlements_municipalities;
+    
+    ALTER TABLE rpj.settlements 
+    DROP CONSTRAINT pk_settlements;
+
+    INSERT INTO rpj.settlements
     SELECT * FROM staging.u_settlements;
 
     TRUNCATE TABLE staging.u_settlements;
@@ -95,11 +103,34 @@ BEGIN;
     CREATE INDEX idx_settlements_geom 
     ON rpj.settlements USING GIST (geom);
 
-    ALTER TABLE rpj.settlements LOGGED;
-
     VACUUM ANALYZE rpj.settlements;
 
-    CREATE UNLOGGED TABLE rpj.streets AS
+    DROP INDEX IF EXISTS idx_postal_offices_postal_name;
+
+    ALTER TABLE rpj.postal_offices 
+    DROP CONSTRAINT pk_postal_offices;
+
+    INSERT INTO rpj.postal_offices
+    SELECT * FROM staging.u_postal_offices;
+
+    TRUNCATE TABLE staging.u_postal_offices;
+
+    ALTER TABLE rpj.postal_offices 
+    ADD CONSTRAINT pk_postal_offices PRIMARY KEY (id);
+
+    CREATE INDEX idx_postal_offices_postal_code 
+    ON rpj.postal_offices (postal_code);
+
+    DROP INDEX IF EXISTS idx_streets_settlement_code;
+    DROP INDEX IF EXISTS idx_streets_name;
+
+    ALTER TABLE rpj.streets 
+    DROP CONSTRAINT fk_streets_settlements;
+
+    ALTER TABLE rpj.streets 
+    DROP CONSTRAINT pk_streets;
+
+    INSERT INTO rpj.streets
     SELECT * FROM staging.u_streets;
 
     TRUNCATE TABLE staging.u_streets;
@@ -118,11 +149,18 @@ BEGIN;
     CREATE INDEX idx_streets_name 
     ON rpj.streets (name);
 
-    ALTER TABLE rpj.streets LOGGED;
-
     VACUUM ANALYZE rpj.streets;
 
-    CREATE UNLOGGED TABLE rpj.addresses AS
+    DROP INDEX IF EXISTS idx_addresses_street_id;
+    DROP INDEX IF EXISTS idx_addresses_geom;
+    
+    ALTER TABLE rpj.addresses 
+    DROP CONSTRAINT fk_addresses_streets;
+    
+    ALTER TABLE rpj.addresses 
+    DROP CONSTRAINT pk_addresses;
+
+    INSERT INTO rpj.addresses
     SELECT id,
         street_id,
         house_number,
@@ -149,7 +187,13 @@ BEGIN;
 
     VACUUM ANALYZE rpj.addresses;
 
-    CREATE UNLOGGED TABLE dkp.cadastral_municipalities AS
+    DROP INDEX IF EXISTS idx_cadastral_municipalities_national_code;
+    DROP INDEX IF EXISTS idx_cadastral_municipalities_geom;
+    
+    ALTER TABLE dkp.cadastral_municipalities 
+    DROP CONSTRAINT pk_cadastral_municipalities;
+    
+    INSERT INTO dkp.cadastral_municipalities
     SELECT * FROM staging.u_cadastral_municipalities;
 
     TRUNCATE TABLE staging.u_cadastral_municipalities;
@@ -163,11 +207,19 @@ BEGIN;
     CREATE INDEX idx_cadastral_municipalities_geom 
     ON dkp.cadastral_municipalities USING GIST (geom);
 
-    ALTER TABLE dkp.cadastral_municipalities LOGGED;
-
     VACUUM ANALYZE dkp.cadastral_municipalities;
 
-    CREATE UNLOGGED TABLE dkp.cadastral_parcels AS
+    DROP INDEX IF EXISTS idx_cadastral_parcels_cadastral_municipality_code;
+    DROP INDEX IF EXISTS idx_cadastral_parcels_parcel_code;
+    DROP INDEX IF EXISTS idx_cadastral_parcels_geom;
+    
+    ALTER TABLE dkp.cadastral_parcels 
+    DROP CONSTRAINT fk_cadastral_parcels_cadastral_municipalities;
+    
+    ALTER TABLE dkp.cadastral_parcels 
+    DROP CONSTRAINT pk_cadastral_parcels;
+    
+    INSERT INTO dkp.cadastral_parcels
     SELECT * FROM staging.u_cadastral_parcels;
 
     TRUNCATE TABLE staging.u_cadastral_parcels;
@@ -189,11 +241,20 @@ BEGIN;
     CREATE INDEX idx_cadastral_parcels_geom 
     ON dkp.cadastral_parcels USING GIST (geom);
 
-    ALTER TABLE dkp.cadastral_parcels LOGGED;
-
     VACUUM ANALYZE dkp.cadastral_parcels;
 
-    CREATE UNLOGGED TABLE dkp.buildings AS
+    DROP INDEX IF EXISTS idx_buildings_cadastral_municipality_code;
+    DROP INDEX IF EXISTS idx_buildings_building_number;
+    DROP INDEX IF EXISTS idx_buildings_usage_code;
+    DROP INDEX IF EXISTS idx_buildings_geom;
+
+    ALTER TABLE dkp.buildings 
+    DROP CONSTRAINT fk_buildings_cadastral_municipalities;
+    
+    ALTER TABLE dkp.buildings 
+    DROP CONSTRAINT pk_buildings;
+
+    INSERT INTO dkp.buildings
     SELECT * FROM staging.u_buildings;
 
     TRUNCATE TABLE staging.u_buildings;
@@ -217,8 +278,6 @@ BEGIN;
 
     CREATE INDEX idx_buildings_geom 
     ON dkp.buildings USING GIST (geom);
-
-    ALTER TABLE dkp.buildings LOGGED;
 
     VACUUM ANALYZE dkp.buildings;
 
