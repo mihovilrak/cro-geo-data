@@ -1,3 +1,9 @@
+tables_exist() {
+    PGPASSWORD=${DB_PASSWORD} \
+    psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} \
+        -tAf table_check.sql 2>/dev/null | grep -q "^t$"
+}
+
 post_request() {
     curl -X POST -u ${GEOSERVER_USER}:${GEOSERVER_PASSWORD} \
     "${GEOSERVER_URL}/geoserver/rest/${1}" \
@@ -33,6 +39,13 @@ requests = ("${ws}?default=true|json/workspace.json" \
 "${ft}/buildings|json/buildings.json")
 
 slds = ("house_numbers.sld" "parcels.sld")
+
+while ! tables_exist; do
+    echo "Waiting for tables to be created..."
+    sleep 5
+done
+
+echo "Tables exist, continuing with GeoServer initialization..."
 
 for request in "${requests[@]}"; do
     IFS='|' read -r request_url request_file <<< "$request"
