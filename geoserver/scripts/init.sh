@@ -21,6 +21,18 @@ post_sld() {
     -d @sld/${1}
 }
 
+get_native_bbox() {
+    bbox = $(
+        PGPASSWORD=${DB_PASSWORD} \
+        psql -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT} \
+        -tA -c "SELECT gs.get_native_bbox('${1}')" 2>/dev/null)
+    IFS='|' read -r xmin xmax ymin ymax <<< "$bbox"
+    echo sed 's/"XMIN"/${xmin}/g' ${1} \
+    | sed 's/"XMAX"/${xmax}/g' \
+    | sed 's/"YMIN"/${ymin}/g' \
+    | sed 's/"YMAX"/${ymax}/g'
+}
+
 ws = "workspaces"
 ds = "${ws}/cro-geo-data/datastores"
 ft = "${ds}/postgis/featuretypes"
@@ -56,7 +68,7 @@ for request in "${requests[@]}"; do
         | sed 's/DB_USER/${DB_USER}/g' \
         | sed 's/DB_PASSWORD/${DB_PASSWORD}/g')"
     else
-        post_request "$request_url" "@${request_file}"
+        post_request "$request_url" "$(get_native_bbox ${request_file})"
     fi
 done
 
