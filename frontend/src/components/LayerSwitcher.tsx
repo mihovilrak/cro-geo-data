@@ -8,6 +8,8 @@ const LayerSwitcher: React.FC<LayerSwitcherProps> = ({
   toggleLayer,
   toggleBase,
   activeBase,
+  isLoading,
+  error,
 }) => {
   return (
     <div className="bg-white p-4 rounded shadow mb-2">
@@ -36,9 +38,16 @@ const LayerSwitcher: React.FC<LayerSwitcherProps> = ({
       </div>
       <h3 className="font-semibold mb-2 text-lg">Data Layers</h3>
       <div className="space-y-2">
-        {availableLayers.length === 0 ? (
+        {isLoading && (
+          <p className="text-gray-500 text-sm">Loading layers…</p>
+        )}
+        {!isLoading && error && (
+          <p className="text-red-600 text-sm">{error}</p>
+        )}
+        {!isLoading && !error && availableLayers.length === 0 && (
           <p className="text-gray-500 text-sm">No layers available</p>
-        ) : (
+        )}
+        {!isLoading && !error && availableLayers.length > 0 && (
           availableLayers.map((layer) => (
             <label key={layer.id} className="flex items-center cursor-pointer">
               <input
@@ -50,7 +59,8 @@ const LayerSwitcher: React.FC<LayerSwitcherProps> = ({
               <span>{layer.title}</span>
             </label>
           ))
-        )}
+        )
+        }
       </div>
     </div>
   );
