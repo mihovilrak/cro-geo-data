@@ -18,6 +18,12 @@
 - DRF viewsets power `/api/parcels/` and `/api/admin_boundaries/`, exposing GeoJSON with bbox, attribute filters, and search via `rest_framework_gis`.
 - Serializers emit derived metadata (e.g., parent county names) and PostGIS connectivity defaults to the env-driven PostGIS DSN with an opt-in SQLite fallback for local dev.
 - FilterSets (`cadastral/filters.py`) capture friendly query params like `parcel_id`, `cadastral_municipality`, and `admin_type`.
+- Settlements, streets (materialized view) and addresses ship with dedicated serializers/viewsets + documentation in `docs/api.md` and `docs/openapi.yaml`.
+
+### Automation & Scheduling
+- Celery worker + beat services (`docker-compose.yml`) execute `cadastral.tasks.run_full_ingest` every Sunday at 02:00, chaining downloads → SQL refresh → GeoServer publication.
+- Manual CLI helpers (`python manage.py run_ingest`, `publish_layers`) make it easy to trigger the pipeline or just refresh GeoServer from the backend container.
+- `geoserver_integration/publisher.py` now underpins both the Celery pipeline and the standalone management command.
 
 ### Database Bootstrap (PostgreSQL + PostGIS)
 - `db/init/` contains comprehensive DDL: schema creation (`dkp`, `rpj`, `staging`, `gs`, `journal`), lookup tables, union tables, materialized views, helper functions (e.g. `gs.get_native_bbox`, `journal` updaters) and data-mart views ready for GeoServer publishing.
@@ -36,33 +42,33 @@
 - `.gitignore`, VS Code settings, and env templates are already curated.
 
 ## 🚧 Partially Implemented / Needs Integration
-- **GeoDjango coverage gaps**: Parcels + counties/municipalities are live, but settlements/streets/addresses still need serializers, endpoints, and tests; spatial caching/pagination tuning is pending.
-- **ETL orchestration**: Download/extract scripts operate, but there is no scheduler (Celery Beat/cron) nor glue code to move staged tables into the normalized schemas using the SQL functions.
+- **GeoDjango coverage gaps**: Endpoints exist for settlements/streets/addresses, but pagination/performance tuning plus bbox-driven caching are pending; address metadata still lacks ownership/usage joins.
+- **ETL orchestration**: Celery Beat now triggers the ingest pipeline, but we still lack run metadata/journaling, retry policies, and visibility into failures.
 - **GeoServer linkage**: REST payloads/SLDs are ready, yet the Docker stack does not invoke `geoserver/scripts/init.sh` automatically, and no .env wiring feeds DB credentials to that script.
-- **Frontend ↔ API**: UI currently hardcodes available layers and only talks to GeoServer WMS; it is not wired to Django endpoints for metadata or layer catalogs.
-- **Testing/CI**: Frontend has Jest coverage and backend scripts have pytest, but there are no tests for Django views/models, nor automated CI workflow.
+- **Frontend ↔ API**: Layer catalog + download UI is live, but GetFeatureInfo still hits GeoServer directly and bypasses the richer DRF metadata.
+- **Testing/CI**: Frontend has Jest coverage and backend scripts have pytest, but there are no integration tests hitting Django viewsets nor an automated CI workflow.
 
 ## ⏳ Pending Implementation (Priority Order)
-1. **Broaden GeoDjango API surface**: add serializers/viewsets for settlements, streets, and addresses (leveraging `gs` views), plus pagination/bbox tuning for large feature classes.
-2. **Document and harden API contracts**: update `docs/api.md`, add OpenAPI schema, and cover viewsets with pytest + DRF test client cases.
-3. **Integrate ETL pipeline**: add coordinator (Celery task or management command) that chains downloaders, extractor, and SQL refresh functions; persist run metadata/journaling.
-4. **Automate GeoServer publishing**: hook `geoserver/scripts/init.sh` (or a Python REST client) into container startup with correct env vars so new tables auto-publish with styles.
-5. **Frontend data plumbing**: replace hardcoded layer lists with API/GeoServer discovery, surface feature metadata from DRF, and align download links with authenticated GeoServer endpoints.
+1. **Broaden GeoDjango API surface**: extend pagination tuning, add bbox caching and expose ownership/usage attributes for addresses/streets.
+2. **Document and harden API contracts**: finish examples + error handling in `docs/api.md`, keep OpenAPI in sync, and add DRF integration tests once fixtures exist.
+3. **Integrate ETL pipeline**: wire Celery run metadata into `journal` tables, expose health endpoints, and persist run history for observability.
+4. **Automate GeoServer publishing**: hook `geoserver/scripts/init.sh` (or an init container) into docker lifecycle so first boot publishes layers without manual steps.
+5. **Frontend data plumbing**: surface backend metadata (counts, last updated) in UI and pipe GetFeatureInfo responses through DRF for enriched detail.
 6. **Authentication & roles**: per roadmap, add Django auth/JWT plus nginx/GeoServer security configuration.
 7. **CI/CD & QA**: introduce GitHub Actions (lint, pytest, frontend tests), add coverage for Django code, and document acceptance tests.
 8. **Production hardening**: TLS cert automation, secrets management, logging/monitoring stack, and performance tuning for large datasets.
 
 ## 🎯 Next Steps
-1. Extend the API to additional layers (settlements, addresses, cadastral municipalities) and mirror those changes in the frontend layer catalog.
-2. Update `docs/api.md` and generate automated schema docs that reflect the live `/api/parcels` & `/api/admin_boundaries` capabilities (bbox, filtering, search).
-3. Implement a management command or Celery Beat task that runs the downloader/extractor pipeline on a schedule and pushes staged data into live schemas via the provided SQL functions.
-4. Integrate the GeoServer init script (or equivalent Python automation) into the docker lifecycle so published layers remain in sync with refreshed tables.
-5. Connect the frontend to live layer metadata (via Django or GeoServer REST), and surface API-driven GetFeatureInfo data instead of placeholders.
+1. Fine-tune the new GeoDjango endpoints (throttle policies, bbox caching) and expose richer metadata for addresses/streets.
+2. Keep `docs/api.md` + `docs/openapi.yaml` aligned by adding automated schema generation in CI.
+3. Extend ETL observability: log run metadata to the `journal` schema and publish Prometheus metrics from Celery.
+4. Automate GeoServer init (docker hook or management command) so new environments publish layers immediately after `docker-compose up`.
+5. Connect the frontend metadata panels to DRF endpoints (GetFeatureInfo proxy) for consistent attribute displays.
 6. Add CI automation plus backend API tests covering permissions, pagination, and geometry serialization.
 
 ## 🔍 What Works Right Now
 1. **Frontend UI**: `npm start` (or `docker-compose up frontend`) renders the Croatia map, layer switcher, metadata/download components, and passes RTL tests without hitting live data.
-2. **Backend GeoJSON endpoints**: `/api/parcels/` and `/api/admin_boundaries/` now query PostGIS, supporting bbox + attribute filters via DRF/GeoDjango.
+2. **Backend GeoJSON endpoints**: `/api/parcels/`, `/api/admin_boundaries/`, `/api/settlements/`, `/api/streets/`, and `/api/addresses/` query PostGIS + materialized views with bbox + attribute filters.
 3. **Data tooling**: `backend/scripts/dkp_downloader.py`, `rpj_downloader.py`, and `extractor.py` can already download OSS/INSPIRE data into `backend/data/downloads/` and load staging tables via ogr2ogr when `DB_STRING` is configured.
 4. **Database bootstrap**: Starting `docker-compose` provisions PostGIS with all schemas, tables, views, and helper functions from `db/init/`.
 5. **GeoServer access**: The container boots with default credentials and can be manually configured through the UI using the provided SLDs/json payloads.
