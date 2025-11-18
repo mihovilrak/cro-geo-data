@@ -177,14 +177,13 @@ class TestExtractDKP:
         sql_args = [str(call[1]) for call in calls]
         layer_names = [call[2] for call in calls]
 
-        assert any("katastarske_opcine.gml" in gml for gml in gml_files)
-        assert any("katastarske_cestice.gml" in gml for gml in gml_files)
-        assert any("nacini_uporabe_zgrada.gml" in gml for gml in gml_files)
+        assert any("cadastral_municipalities.gml" in gml for gml in gml_files)
+        assert any("cadastral_parcels.gml" in gml for gml in gml_files)
+        assert any("buildings.gml" in gml for gml in gml_files)
 
-        assert all("tmp_" in layer for layer in layer_names)
-        assert "tmp_katastarske_opcine" in layer_names
-        assert "tmp_katastarske_cestice" in layer_names
-        assert "tmp_nacini_uporabe_zgrada" in layer_names
+        assert "staging.u_cadastral_municipalities" in layer_names
+        assert "staging.u_cadastral_parcels" in layer_names
+        assert "staging.u_buildings" in layer_names
 
     @patch("scripts.extractor.parse_gml")
     def test_extract_dkp_deletes_zip_after_extraction(
@@ -251,10 +250,10 @@ class TestExtractAU:
         calls = [call[0] for call in mock_parse_gml.call_args_list]
         layer_names = [call[2] for call in calls]
 
-        assert "tmp_au_država" in layer_names
-        assert "tmp_au_županija" in layer_names
-        assert "tmp_au_jedinica lokalne samouprave" in layer_names
-        assert "tmp_au_naselje" in layer_names
+        assert "staging.u_country" in layer_names
+        assert "staging.u_county" in layer_names
+        assert "staging.u_municipality" in layer_names
+        assert "staging.u_settlement" in layer_names
 
     @patch("scripts.extractor.parse_gml")
     def test_extract_au_deletes_zip_after_extraction(
@@ -316,11 +315,12 @@ class TestExtractAD:
 
         extractor.extract_ad(test_zip)
 
-        assert mock_parse_gml.call_count == 1
+        assert mock_parse_gml.call_count == 3
 
-        call_args = mock_parse_gml.call_args[0]
-        assert "Addresses.gml" in str(call_args[0])
-        assert call_args[2] == "tmp_ad"
+        gml_files = [str(call[0][0]) for call in mock_parse_gml.call_args_list]
+        assert any("Address.gml" in gml for gml in gml_files)
+        assert any("ThoroughfareName.gml" in gml for gml in gml_files)
+        assert any("PostalDescriptor.gml" in gml for gml in gml_files)
 
     @patch("scripts.extractor.parse_gml")
     def test_extract_ad_deletes_zip_after_extraction(
@@ -378,10 +378,16 @@ class TestParseGML:
         assert mock_subprocess.call_count == 1
 
         call_args = mock_subprocess.call_args[0][0]
-        assert call_args[0] == "ogr2ogr"
-        assert call_args[1] == "-f"
-        assert call_args[2] == "PostgreSQL"
-        assert "GEOMETRY_NAME=geom" in call_args
+        assert call_args[:5] == (
+            "ogr2ogr",
+            "-f",
+            "PostgreSQL",
+            "PG:dbname=test",
+            str(gml_file),
+        )
+        assert "-append" in call_args
+        assert "-lco" in call_args
+        assert "ENCODING=UTF-8" in call_args
         assert "ENCODING=UTF-8" in call_args
         assert call_args[call_args.index("-nln") + 1] == layer_name
         assert call_args[call_args.index("-sql") + 1] == sql_query
