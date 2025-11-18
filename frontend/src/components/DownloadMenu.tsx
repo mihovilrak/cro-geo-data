@@ -5,7 +5,6 @@ import { DownloadMenuProps } from "../services/types";
 const DownloadMenu: React.FC<DownloadMenuProps> = ({ activeLayer, bbox }) => {
   const [format, setFormat] = useState<string>("application/json");
 
-  // Map user-friendly labels to GeoServer WFS outputFormat params
   const formatOptions = [
     { label: "GeoJSON", value: "application/json" },
     { label: "Shapefile (zip)", value: "shape-zip" },
@@ -16,12 +15,14 @@ const DownloadMenu: React.FC<DownloadMenuProps> = ({ activeLayer, bbox }) => {
   ];
 
   const buildWfsUrl = () => {
-    const base = `${process.env.REACT_APP_GEOSERVER_URL || "http://localhost:8080/geoserver"}/wfs`;
+    const geoserverUrl = process.env.REACT_APP_GEOSERVER_URL || "http://localhost:8080/geoserver";
+    const workspace = activeLayer.workspace || process.env.REACT_APP_GEOSERVER_WORKSPACE || "cro-geo-data";
+    const base = `${geoserverUrl}/wfs`;
     const params = new URLSearchParams({
       service: "WFS",
       version: "1.1.0",
       request: "GetFeature",
-      typeName: `croatia:${activeLayer}`,
+      typeName: `${workspace}:${activeLayer.wms_name}`,
       outputFormat: format,
     });
     if (bbox) {
@@ -32,7 +33,7 @@ const DownloadMenu: React.FC<DownloadMenuProps> = ({ activeLayer, bbox }) => {
 
   return (
     <div className="bg-white p-4 rounded shadow mt-2">
-      <h4 className="font-semibold mb-2 text-lg">Download "{activeLayer}"</h4>
+      <h4 className="font-semibold mb-2 text-lg">Download "{activeLayer.title}"</h4>
       <div className="flex flex-col space-y-2">
         <select
           className="border p-2 rounded"
