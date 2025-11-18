@@ -8,4 +8,4 @@ CREATE OR REPLACE VIEW gs.v_settlements AS
         s.geom
     FROM rpj.settlements s
     LEFT JOIN rpj.municipalities m ON s.municipality_code = m.national_code
-    LEFT JOIN rpj.counties c ON s.national_code = c.national_code;
+    LEFT JOIN rpj.counties c ON m.county_code = c.national_code;
