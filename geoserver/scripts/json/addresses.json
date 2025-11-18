@@ -1,15 +1,15 @@
 {
     "featureType": {
-      "name": "test_point",
-      "nativeName": "test_point",
+      "name": "v_addresses",
+      "nativeName": "v_addresses",
       "namespace": {
         "name": "cro-geo-data"
       },
-      "title": "test_point",
+      "title": "Addresses",
       "keywords": {
         "string": [
           "features",
-          "test_point"
+          "addresses"
         ]
       },
       "nativeCRS": {
@@ -18,10 +18,10 @@
       },
       "srs": "EPSG:3765",
       "nativeBoundingBox": {
-        "minx": 0,
-        "maxx": 2,
-        "miny": 1,
-        "maxy": 3,
+        "minx": "XMIN",
+        "maxx": "XMAX",
+        "miny": "YMIN",
+        "maxy": "YMAX",
         "crs": {
           "@class": "projected",
           "$": "EPSG:3765"
@@ -60,20 +60,90 @@
       "attributes": {
         "attribute": [
           {
-            "name": "name",
+            "name": "id",
             "minOccurs": 0,
             "maxOccurs": 1,
-            "nillable": true,
+            "nillable": false,
+            "binding": "java.lang.Integer"
+          },
+          {
+            "name": "street_id",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.Integer"
+          },
+          {
+            "name": "street_name",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.String"
+          },
+          {
+            "name": "house_number",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.String"
+          },
+          {
+            "name": "settlement_code",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.Integer"
+          },
+          {
+            "name": "settlement_name",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.String"
+          },
+          {
+            "name": "zip",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.Integer"
+          },
+          {
+            "name": "postal_office_name",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.String"
+          },
+          {
+            "name": "municipality_name",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.String"
+          },
+          {
+            "name": "county_name",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
+            "binding": "java.lang.String"
+          },
+          {
+            "name": "address",
+            "minOccurs": 0,
+            "maxOccurs": 1,
+            "nillable": false,
             "binding": "java.lang.String"
           },
           {
             "name": "geom",
             "minOccurs": 0,
             "maxOccurs": 1,
-            "nillable": true,
+            "nillable": false,
             "binding": "org.locationtech.jts.geom.Point"
           }
         ]
-      }
     }
   }
+}
