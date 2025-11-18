@@ -40,7 +40,6 @@ ft = "${ds}/postgis/featuretypes"
 requests = ("${ws}?default=true|json/workspace.json" \
 "${ds}|json/postgis.json" \
 "${ft}/addresses|json/addresses.json" \
-"${ft}/postal_offices|json/postal_offices.json" \
 "${ft}/streets|json/streets.json" \
 "${ft}/municipalities|json/municipalities.json" \
 "${ft}/settlements|json/settlements.json" \
