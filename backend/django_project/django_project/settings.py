@@ -1,6 +1,7 @@
 """
 Django settings for django_project project.
 """
+
 import os
 import sys
 from pathlib import Path
@@ -155,7 +156,7 @@ LAYER_CATALOG = [
         "id": "cadastral_parcels",
         "title": "Cadastral Parcels",
         "wms_name": "cadastral_parcels",
-        "api_path": "/api/parcels/",
+        "api_path": "/api/cadastral_parcels/",
         "native_table": "gs.v_cadastral_parcels",
         "workspace": GEOSERVER_WORKSPACE,
         "default": True,
@@ -164,7 +165,7 @@ LAYER_CATALOG = [
         "id": "cadastral_municipalities",
         "title": "Cadastral Municipalities",
         "wms_name": "cadastral_municipalities",
-        "api_path": "/api/admin_boundaries/?admin_type=municipality",
+        "api_path": "/api/cadastral_municipalities/",
         "native_table": "gs.v_cadastral_municipalities",
         "workspace": GEOSERVER_WORKSPACE,
         "default": False,
@@ -173,8 +174,17 @@ LAYER_CATALOG = [
         "id": "counties",
         "title": "Counties",
         "wms_name": "counties",
-        "api_path": "/api/admin_boundaries/?admin_type=county",
+        "api_path": "/api/counties/",
         "native_table": "gs.v_counties",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": False,
+    },
+    {
+        "id": "municipalities",
+        "title": "Municipalities",
+        "wms_name": "municipalities",
+        "api_path": "/api/municipalities/",
+        "native_table": "gs.v_municipalities",
         "workspace": GEOSERVER_WORKSPACE,
         "default": False,
     },
