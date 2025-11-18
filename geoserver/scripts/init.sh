@@ -38,18 +38,26 @@ ds = "${ws}/cro-geo-data/datastores"
 ft = "${ds}/postgis/featuretypes"
 
 requests = ("${ws}?default=true|json/workspace.json" \
-"${ds}|json/postgis.json" \
-"${ft}/addresses|json/addresses.json" \
-"${ft}/streets|json/streets.json" \
-"${ft}/municipalities|json/municipalities.json" \
-"${ft}/settlements|json/settlements.json" \
-"${ft}/counties|json/counties.json" \
-"${ft}/country|json/country.json" \
-"${ft}/cadastral_municipalities|json/cadastral_municipalities.json" \
-"${ft}/cadastral_parcels|json/cadastral_parcels.json" \
-"${ft}/buildings|json/buildings.json")
+    "${ds}|json/postgis.json" \
+    "${ft}/addresses|json/addresses.json" \
+    "${ft}/streets|json/streets.json" \
+    "${ft}/municipalities|json/municipalities.json" \
+    "${ft}/settlements|json/settlements.json" \
+    "${ft}/counties|json/counties.json" \
+    "${ft}/country|json/country.json" \
+    "${ft}/cadastral_municipalities|json/cadastral_municipalities.json" \
+    "${ft}/cadastral_parcels|json/cadastral_parcels.json" \
+    "${ft}/buildings|json/buildings.json")
 
-slds = ("house_numbers.sld" "parcels.sld")
+slds = ("addresses.sld" \
+    "streets.sld" \
+    "municipalities.sld" \
+    "settlements.sld" \
+    "counties.sld" \
+    "country.sld" \
+    "cadastral_municipalities.sld" \
+    "cadastral_parcels.sld" \
+    "buildings.sld")
 
 while ! tables_exist; do
     echo "Waiting for tables to be created..."
