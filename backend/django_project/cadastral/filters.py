@@ -5,11 +5,16 @@ import django_filters
 
 from .models import (
     Address,
+    Building,
+    CadastralMunicipality,
     CadastralParcel,
+    Country,
     County,
     Municipality,
+    PostalOffice,
     Settlement,
     StreetFeature,
+    Usage,
 )
 
 class CadastralParcelFilterSet(django_filters.FilterSet):
@@ -156,4 +161,85 @@ class AddressFilterSet(django_filters.FilterSet):
             "house_number",
             "settlement_code",
             "municipality_code",
+        )
+
+class CountryFilterSet(django_filters.FilterSet):
+    """
+    Filter set for country.
+    """
+    national_code = django_filters.NumberFilter(field_name="national_code")
+    name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
+
+    class Meta:
+        model = Country
+        fields = (
+            "national_code",
+            "name",
+        )
+
+class CadastralMunicipalityFilterSet(django_filters.FilterSet):
+    """
+    Filter set for cadastral municipalities.
+    """
+    national_code = django_filters.NumberFilter(field_name="national_code")
+    name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
+    harmonization_status = django_filters.NumberFilter(field_name="harmonization_status")
+
+    class Meta:
+        model = CadastralMunicipality
+        fields = (
+            "national_code",
+            "name",
+            "harmonization_status",
+        )
+
+class PostalOfficeFilterSet(django_filters.FilterSet):
+    """
+    Filter set for postal offices.
+    """
+    postal_code = django_filters.NumberFilter(field_name="postal_code")
+    name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
+
+    class Meta:
+        model = PostalOffice
+        fields = (
+            "postal_code",
+            "name",
+        )
+
+class BuildingFilterSet(django_filters.FilterSet):
+    """
+    Filter set for buildings.
+    """
+    building_number = django_filters.NumberFilter(field_name="building_number")
+    cadastral_municipality_code = django_filters.NumberFilter(
+        field_name="cadastral_municipality__national_code"
+    )
+    cadastral_municipality = django_filters.CharFilter(
+        field_name="cadastral_municipality__name",
+        lookup_expr="icontains"
+    )
+    usage_code = django_filters.NumberFilter(field_name="usage__code")
+
+    class Meta:
+        model = Building
+        fields = (
+            "building_number",
+            "cadastral_municipality_code",
+            "cadastral_municipality",
+            "usage_code",
+        )
+
+class UsageFilterSet(django_filters.FilterSet):
+    """
+    Filter set for usage codes.
+    """
+    code = django_filters.NumberFilter(field_name="code")
+    name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
+
+    class Meta:
+        model = Usage
+        fields = (
+            "code",
+            "name",
         )
