@@ -2,24 +2,23 @@
 Django settings for django_project project.
 """
 import os
+import sys
 from pathlib import Path
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BASE_DIR.parent
+sys.path.insert(0, str(REPO_ROOT))
 
-# Load .env
-load_dotenv(BASE_DIR / ".." / ".env")
+load_dotenv(REPO_ROOT / ".env")
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-this-in-production")
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = ["*"]  # Configure properly for production
+ALLOWED_HOSTS = ["*"]
 
-# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -27,12 +26,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.gis",                # GeoDjango
+    "django.contrib.gis",
     "rest_framework",
-    "rest_framework_gis",                # GeoJSON Renderers, Filters
+    "rest_framework_gis",
     "django_filters",
     "corsheaders",
-    "cadastral",                         # Our app
+    "cadastral",
 ]
 
 MIDDLEWARE = [
@@ -90,7 +89,6 @@ else:
         }
     }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -106,22 +104,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
 LANGUAGE_CODE = "en-us"
 TIME_ZONE     = "Europe/Zagreb"
 USE_I18N      = True
 USE_TZ        = True
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL  = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL   = "/media/"
 MEDIA_ROOT  = BASE_DIR / "media"
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# REST Framework settings
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
@@ -131,12 +125,84 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 100,
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
 }
 
-# CORS settings
 CORS_ALLOWED_ORIGINS = os.getenv(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:3000"
 ).split(",")
 CORS_ALLOW_CREDENTIALS = True
 
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+CELERY_TASK_DEFAULT_QUEUE = os.getenv("CELERY_TASK_DEFAULT_QUEUE", "cadastral")
+CELERY_BEAT_SCHEDULE = {
+    "weekly-etl-refresh": {
+        "task": "cadastral.tasks.run_full_ingest",
+        "schedule": crontab(hour=2, minute=0, day_of_week="0"),
+    },
+}
+
+GEOSERVER_URL = os.getenv("GEOSERVER_URL", "http://geoserver:8080/geoserver")
+GEOSERVER_USER = os.getenv("GEOSERVER_USER", "admin")
+GEOSERVER_PASSWORD = os.getenv("GEOSERVER_PASSWORD", "geoserver")
+GEOSERVER_WORKSPACE = os.getenv("GEOSERVER_WORKSPACE", "cro-geo-data")
+GEOSERVER_DATASTORE = os.getenv("GEOSERVER_DATASTORE", "postgis")
+
+LAYER_CATALOG = [
+    {
+        "id": "cadastral_parcels",
+        "title": "Cadastral Parcels",
+        "wms_name": "cadastral_parcels",
+        "api_path": "/api/parcels/",
+        "native_table": "gs.v_cadastral_parcels",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": True,
+    },
+    {
+        "id": "cadastral_municipalities",
+        "title": "Cadastral Municipalities",
+        "wms_name": "cadastral_municipalities",
+        "api_path": "/api/admin_boundaries/?admin_type=municipality",
+        "native_table": "gs.v_cadastral_municipalities",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": False,
+    },
+    {
+        "id": "counties",
+        "title": "Counties",
+        "wms_name": "counties",
+        "api_path": "/api/admin_boundaries/?admin_type=county",
+        "native_table": "gs.v_counties",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": False,
+    },
+    {
+        "id": "settlements",
+        "title": "Settlements",
+        "wms_name": "settlements",
+        "api_path": "/api/settlements/",
+        "native_table": "gs.v_settlements",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": False,
+    },
+    {
+        "id": "streets",
+        "title": "Streets",
+        "wms_name": "streets",
+        "api_path": "/api/streets/",
+        "native_table": "gs.mv_streets",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": False,
+    },
+    {
+        "id": "addresses",
+        "title": "Addresses",
+        "wms_name": "addresses",
+        "api_path": "/api/addresses/",
+        "native_table": "gs.v_addresses",
+        "workspace": GEOSERVER_WORKSPACE,
+        "default": False,
+    },
+]

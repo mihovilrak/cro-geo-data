@@ -1,0 +1,21 @@
+"""
+Celery application instance for background + scheduled tasks.
+"""
+import os
+
+from celery import Celery
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_project.settings")
+
+app = Celery("django_project")
+app.config_from_object("django.conf:settings", namespace="CELERY")
+app.autodiscover_tasks()
+
+@app.task(bind=True)
+def debug_task(self) -> None:
+    """
+    Helper for manual debugging.
+    """
+    print(f"Request: {self.request!r}")
+
+
