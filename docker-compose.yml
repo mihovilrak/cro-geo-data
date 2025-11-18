@@ -54,6 +54,51 @@ services:
                --workers 3
                --timeout 120"
 
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cro_geo_data_celery
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - "./backend:/app"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      sh -c "cd django_project &&
+             celery -A django_project worker
+             --loglevel=INFO
+             --queues=${CELERY_TASK_DEFAULT_QUEUE:-cadastral}"
+
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cro_geo_data_celery_beat
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - "./backend:/app"
+    depends_on:
+      - db
+      - redis
+      - backend
+    command: >
+      sh -c "cd django_project &&
+             celery -A django_project beat --loglevel=INFO"
+
   frontend:
     build:
       context: ./frontend
