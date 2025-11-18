@@ -9,7 +9,6 @@ explicitly wire ``to_field``/``db_column`` to avoid surrogate keys.
 """
 from django.contrib.gis.db import models
 
-
 class TimestampedGeometryModel(models.Model):
     """
     Reusable mixin for read-only tables that expose an ``updated_at`` column.
@@ -20,7 +19,6 @@ class TimestampedGeometryModel(models.Model):
     class Meta:
         abstract = True
         managed = False
-
 
 class County(TimestampedGeometryModel):
     id = models.IntegerField(primary_key=True)
@@ -37,7 +35,6 @@ class County(TimestampedGeometryModel):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.national_code})"
-
 
 class Municipality(TimestampedGeometryModel):
     id = models.IntegerField(primary_key=True)
@@ -62,7 +59,6 @@ class Municipality(TimestampedGeometryModel):
     def __str__(self) -> str:
         return f"{self.name} ({self.national_code})"
 
-
 class Settlement(TimestampedGeometryModel):
     id = models.IntegerField(primary_key=True)
     national_code = models.IntegerField(unique=True)
@@ -86,7 +82,6 @@ class Settlement(TimestampedGeometryModel):
     def __str__(self) -> str:
         return f"{self.name} ({self.national_code})"
 
-
 class PostalOffice(TimestampedGeometryModel):
     id = models.BigIntegerField(primary_key=True)
     postal_code = models.IntegerField(unique=True)
@@ -101,7 +96,6 @@ class PostalOffice(TimestampedGeometryModel):
 
     def __str__(self) -> str:
         return f"{self.postal_code} {self.name}"
-
 
 class Street(TimestampedGeometryModel):
     id = models.BigIntegerField(primary_key=True)
@@ -133,6 +127,30 @@ class Street(TimestampedGeometryModel):
 
     def __str__(self) -> str:
         return self.name
+
+class StreetFeature(models.Model):
+    """
+    Materialized view that exposes generalized street geometries for mapping.
+    """
+
+    id = models.BigIntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    unique_identifier = models.BigIntegerField()
+    settlement_code = models.IntegerField()
+    settlement_name = models.CharField(max_length=255)
+    municipality_name = models.CharField(max_length=255)
+    county_name = models.CharField(max_length=255)
+    geom = models.GeometryField(srid=3765)
+
+    class Meta:
+        managed = False
+        db_table = '"gs"."mv_streets"'
+        ordering = ("name",)
+        verbose_name = "Street (materialized view)"
+        verbose_name_plural = "Streets (materialized view)"
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.settlement_name})"
 
 
 class Address(TimestampedGeometryModel):

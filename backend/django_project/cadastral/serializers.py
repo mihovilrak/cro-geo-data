@@ -6,8 +6,9 @@ from .models import (
     CadastralParcel,
     County,
     Municipality,
+    Settlement,
+    StreetFeature,
 )
-
 
 class CadastralParcelSerializer(GeoFeatureModelSerializer):
     cadastral_municipality_code = serializers.IntegerField(
@@ -28,7 +29,6 @@ class CadastralParcelSerializer(GeoFeatureModelSerializer):
             "cadastral_municipality_code",
             "cadastral_municipality_name",
         )
-
 
 class AdministrativeBoundarySerializer(GeoFeatureModelSerializer):
     admin_type = serializers.SerializerMethodField()
@@ -63,7 +63,6 @@ class AdministrativeBoundarySerializer(GeoFeatureModelSerializer):
             return obj.county.name
         return None
 
-
 class AddressSerializer(GeoFeatureModelSerializer):
     street_name = serializers.CharField(source="street.name", read_only=True)
     settlement_name = serializers.CharField(
@@ -89,4 +88,36 @@ class AddressSerializer(GeoFeatureModelSerializer):
             "updated_at",
         )
 
+class SettlementSerializer(GeoFeatureModelSerializer):
+    municipality_name = serializers.CharField(
+        source="municipality.name", read_only=True
+    )
+    county_name = serializers.CharField(
+        source="municipality.county.name", read_only=True
+    )
 
+    class Meta:
+        model = Settlement
+        geo_field = "geom"
+        fields = (
+            "id",
+            "national_code",
+            "name",
+            "municipality_name",
+            "county_name",
+            "updated_at",
+        )
+
+class StreetSerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = StreetFeature
+        geo_field = "geom"
+        fields = (
+            "id",
+            "name",
+            "unique_identifier",
+            "settlement_code",
+            "settlement_name",
+            "municipality_name",
+            "county_name",
+        )
