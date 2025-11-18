@@ -6,7 +6,6 @@ providing custom admin classes for geographic display and configuration.
 """
 
 from django.contrib import admin
-from django.contrib.gis.admin import OSMGeoAdmin
 
 from .models import (
     Address,
@@ -24,18 +23,18 @@ from .models import (
 )
 
 @admin.register(Country)
-class CountryAdmin(OSMGeoAdmin):
+class CountryAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "national_code", "name", "updated_at", "geom")
     list_display = ("name", "national_code", "updated_at")
 
 @admin.register(County)
-class CountyAdmin(OSMGeoAdmin):
+class CountyAdmin(admin.ModelAdmin):
     readonly_fields = ("id", "national_code", "name", "updated_at", "geom")
     list_display = ("name", "national_code", "updated_at")
     search_fields = ("name", "national_code")
 
 @admin.register(Municipality)
-class MunicipalityAdmin(OSMGeoAdmin):
+class MunicipalityAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "national_code",
@@ -49,7 +48,7 @@ class MunicipalityAdmin(OSMGeoAdmin):
     search_fields = ("name", "national_code")
 
 @admin.register(Settlement)
-class SettlementAdmin(OSMGeoAdmin):
+class SettlementAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "national_code",
@@ -92,7 +91,7 @@ class StreetAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 @admin.register(StreetFeature)
-class StreetFeatureAdmin(OSMGeoAdmin):
+class StreetFeatureAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "name",
@@ -113,7 +112,7 @@ class StreetFeatureAdmin(OSMGeoAdmin):
     search_fields = ("name", "settlement_name")
 
 @admin.register(Address)
-class AddressAdmin(OSMGeoAdmin):
+class AddressAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "street",
@@ -130,7 +129,7 @@ class AddressAdmin(OSMGeoAdmin):
     search_fields = ("house_number", "street__name")
 
 @admin.register(CadastralMunicipality)
-class CadastralMunicipalityAdmin(OSMGeoAdmin):
+class CadastralMunicipalityAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "national_code",
@@ -149,7 +148,7 @@ class CadastralMunicipalityAdmin(OSMGeoAdmin):
     search_fields = ("name", "national_code")
 
 @admin.register(CadastralParcel)
-class CadastralParcelAdmin(OSMGeoAdmin):
+class CadastralParcelAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "parcel_code",
@@ -174,7 +173,7 @@ class UsageAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 @admin.register(Building)
-class BuildingAdmin(OSMGeoAdmin):
+class BuildingAdmin(admin.ModelAdmin):
     readonly_fields = (
         "id",
         "building_number",
