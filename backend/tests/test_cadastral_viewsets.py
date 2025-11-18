@@ -9,9 +9,16 @@ from django.urls import resolve
 from cadastral import views
 from cadastral.serializers import (
     AddressSerializer,
+    BuildingSerializer,
+    CadastralMunicipalitySerializer,
     CadastralParcelSerializer,
+    CountrySerializer,
+    CountySerializer,
+    MunicipalitySerializer,
+    PostalOfficeSerializer,
     SettlementSerializer,
     StreetSerializer,
+    UsageSerializer,
 )
 
 def test_layer_catalog_matches_settings() -> None:
@@ -25,34 +32,54 @@ def test_layer_catalog_matches_settings() -> None:
     assert response.data == settings.LAYER_CATALOG
 
 @pytest.mark.parametrize(
-    "viewset,serializer",
+    "viewset,serializer,has_bbox",
     [
-        (views.CadastralParcelViewSet, CadastralParcelSerializer),
-        (views.SettlementViewSet, SettlementSerializer),
-        (views.StreetViewSet, StreetSerializer),
-        (views.AddressViewSet, AddressSerializer),
+        (views.CountryViewSet, CountrySerializer, True),
+        (views.CountyViewSet, CountySerializer, True),
+        (views.MunicipalityViewSet, MunicipalitySerializer, True),
+        (views.SettlementViewSet, SettlementSerializer, True),
+        (views.StreetViewSet, StreetSerializer, True),
+        (views.AddressViewSet, AddressSerializer, True),
+        (views.CadastralMunicipalityViewSet, CadastralMunicipalitySerializer, True),
+        (views.CadastralParcelViewSet, CadastralParcelSerializer, True),
+        (views.BuildingViewSet, BuildingSerializer, True),
+        (views.PostalOfficeViewSet, PostalOfficeSerializer, False),
+        (views.UsageViewSet, UsageSerializer, False),
     ],
 )
-def test_geo_viewsets_expose_geojson(
+def test_viewsets_expose_correct_serializer(
     viewset: viewsets.ReadOnlyModelViewSet,
-    serializer: type[Serializer]
+    serializer: type[Serializer],
+    has_bbox: bool,
 ) -> None:
     """
-    Test that the GeoJSON viewsets expose the correct serializer and bounding box filter field.
+    Test that viewsets expose the correct serializer and bbox filter field.
 
     Args:
         viewset (viewsets.ReadOnlyModelViewSet): The viewset to test.
         serializer (Serializer): The serializer to test.
+        has_bbox (bool): Whether the viewset should have bbox filtering.
     """
     assert viewset.serializer_class is serializer
-    assert viewset.bbox_filter_field == "geom"
+    if has_bbox:
+        assert viewset.bbox_filter_field == "geom"
+    else:
+        assert not hasattr(viewset, "bbox_filter_field") or viewset.bbox_filter_field is None
 
-def test_router_registers_new_endpoints() -> None:
+def test_router_registers_all_endpoints() -> None:
     """
-    Test that the router registers the new endpoints.
+    Test that the router registers all endpoints matching the database schema.
     """
+    assert resolve("/api/country/").func.cls is views.CountryViewSet
+    assert resolve("/api/counties/").func.cls is views.CountyViewSet
+    assert resolve("/api/municipalities/").func.cls is views.MunicipalityViewSet
     assert resolve("/api/settlements/").func.cls is views.SettlementViewSet
     assert resolve("/api/streets/").func.cls is views.StreetViewSet
     assert resolve("/api/addresses/").func.cls is views.AddressViewSet
+    assert resolve("/api/postal_offices/").func.cls is views.PostalOfficeViewSet
+    assert resolve("/api/cadastral_municipalities/").func.cls is views.CadastralMunicipalityViewSet
+    assert resolve("/api/cadastral_parcels/").func.cls is views.CadastralParcelViewSet
+    assert resolve("/api/buildings/").func.cls is views.BuildingViewSet
+    assert resolve("/api/usages/").func.cls is views.UsageViewSet
 
 
