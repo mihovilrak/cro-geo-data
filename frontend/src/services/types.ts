@@ -1,8 +1,11 @@
 export interface LayerDescriptor {
-  id: string;          // "cadastral_cadastralparcel"
-  title: string;       // "Parcels"
-  workspace?: string;  // "croatia" (optional)
-  srid?: number;       // 3765 (optional)
+  id: string;
+  title: string;
+  wms_name: string;
+  api_path?: string;
+  workspace?: string;
+  native_table?: string;
+  default?: boolean;
 }
 
 export interface ParcelProperties {
@@ -21,20 +24,22 @@ export interface BoundaryProperties {
 }
 
 export interface DownloadMenuProps {
-  activeLayer: string;  // e.g. "cadastral_cadastralparcel"
+  activeLayer: LayerDescriptor;
   bbox?: [number, number, number, number]; // [minX, minY, maxX, maxY] in EPSG:3857
 }
 
 export interface LayerSwitcherProps {
-  availableLayers: { id: string; title: string }[];
+  availableLayers: LayerDescriptor[];
   selectedLayers: string[];
-  toggleLayer: (layerId: string) => void;
   toggleBase: (base: "OSM" | "DOF") => void;
   activeBase: "OSM" | "DOF";
+  toggleLayer: (layerId: string) => void;
+  isLoading: boolean;
+  error?: string;
 }
 
 export interface MapCanvasProps {
-  selectedLayers: string[];       // e.g., ["cadastral_cadastralparcel", "cadastral_administrativeboundary"]
+  selectedLayers: LayerDescriptor[];
   onFeatureClick: (properties: any) => void;
   activeBaseLayer: "OSM" | "DOF";
 }

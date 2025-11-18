@@ -1,4 +1,5 @@
 import axios from "axios";
+import { LayerDescriptor } from "./types";
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api",
@@ -24,6 +25,11 @@ export const fetchParcels = async (
 
 export const fetchAdminBoundaries = async () => {
   const resp = await apiClient.get("/admin_boundaries/");
+  return resp.data;
+}
+
+export const fetchLayerCatalog = async (): Promise<LayerDescriptor[]> => {
+  const resp = await apiClient.get("/layers/");
   return resp.data;
 }
 

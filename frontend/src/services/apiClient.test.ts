@@ -11,7 +11,7 @@ jest.mock('axios', () => {
   };
 });
 
-import apiClient, { fetchParcels, fetchAdminBoundaries } from './apiClient';
+import apiClient, { fetchParcels, fetchAdminBoundaries, fetchLayerCatalog } from './apiClient';
 
 describe('apiClient', () => {
   // Get the mock get function from apiClient (which is the created instance)
@@ -84,6 +84,19 @@ describe('apiClient', () => {
       
       expect(mockGet).toHaveBeenCalledWith('/admin_boundaries/');
       expect(result).toEqual(mockData);
+    });
+  });
+
+  describe('fetchLayerCatalog', () => {
+    it('should fetch layer catalog', async () => {
+      const mockLayers = [{ id: 'cadastral_parcels' }];
+      const mockGet = getMockGet();
+      mockGet.mockResolvedValue({ data: mockLayers });
+
+      const result = await fetchLayerCatalog();
+
+      expect(mockGet).toHaveBeenCalledWith('/layers/');
+      expect(result).toEqual(mockLayers);
     });
   });
 
