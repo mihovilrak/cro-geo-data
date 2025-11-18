@@ -24,13 +24,27 @@ BEGIN
     AND table_name = table_old
     AND column_name NOT IN ('id', 'created_at', 'updated_at');
 
-    CREATE TEMPORARY TABLE hashes_a AS
-    SELECT * FROM staging.md5_hash(schema_name || '.' || table_old, 'id', columns)
-    ORDER BY id;
+    CREATE UNLOGGED TABLE staging.hashes_a AS
+    SELECT * FROM staging.md5_hash(schema_name || '.' || table_old, 'id', columns);
 
-    CREATE TEMPORARY TABLE hashes_b AS
-    SELECT * FROM staging.md5_hash(schema_name || '.' || table_new, 'id', columns)
-    ORDER BY id;
+    CREATE UNLOGGED TABLE staging.hashes_b AS
+    SELECT * FROM staging.md5_hash(schema_name || '.' || table_new, 'id', columns);
+
+    CREATE INDEX idx_hashes_a_id
+    ON staging.hashes_a 
+    USING HASH (id);
+
+    CREATE INDEX idx_hashes_b_id
+    ON staging.hashes_b 
+    USING HASH (id);
+
+    CREATE INDEX idx_hashes_a_hash
+    ON staging.hashes_a 
+    USING HASH (row_hash);
+
+    CREATE INDEX idx_hashes_b_hash
+    ON staging.hashes_b 
+    USING HASH (row_hash);
 
     IF schema_name = 'dkp'
     OR table_old IN ('streets', 'postal_offices') THEN
@@ -38,36 +52,27 @@ BEGIN
             'UPDATE %I.%I n'
             || ' SET updated_at = o.updated_at'
             || ' FROM %I.%I o'
-            || ' JOIN hashes_a a ON a.id = o.id'
-            || ' JOIN hashes_b b ON b.id = n.id AND a.id = b.id'
-            || ' WHERE n.id = o.id'
-            || ' AND a.row_hash = b.row_hash'
+            || ' INNER JOIN staging.hashes_a a ON a.id = o.id'
+            || ' INNER JOIN staging.hashes_b b ON b.id = n.id AND a.id = b.id'
+            || ' WHERE a.row_hash = b.row_hash'
             , schema_name, table_new, schema_name, table_old
         );
-
     END IF;
 
-    SELECT COUNT(*) INTO updated
-    FROM hashes_a a
-    LEFT JOIN hashes_b b ON a.id = b.id
-    WHERE a.row_hash IS DISTINCT FROM b.row_hash
-    AND b.id IS NOT NULL;
+    SELECT 
+        COUNT(*) FILTER (WHERE a.id IS NULL) AS inserted_cnt,
+        COUNT(*) FILTER (WHERE b.id IS NULL) AS deleted_cnt,
+        COUNT(*) FILTER (WHERE a.id IS NOT NULL AND b.id IS NOT NULL 
+                         AND a.row_hash IS DISTINCT FROM b.row_hash) AS updated_cnt
+    INTO inserted, deleted, updated
+    FROM staging.hashes_a a
+    FULL OUTER JOIN staging.hashes_b b USING (id);
 
-    SELECT COUNT(*) INTO deleted
-    FROM hashes_a a
-    LEFT JOIN hashes_b b ON a.id = b.id
-    WHERE b.id IS NULL;
-
-    SELECT COUNT(*) INTO inserted
-    FROM hashes_b b
-    LEFT JOIN hashes_a a ON b.id = a.id
-    WHERE a.id IS NULL;
+    DROP TABLE staging.hashes_b;
+    DROP TABLE staging.hashes_a;
 
     RETURN QUERY
     SELECT inserted, deleted, updated;
-
-    DROP TABLE IF EXISTS hashes_b;
-    DROP TABLE IF EXISTS hashes_a;
 
 END;
 $$ LANGUAGE plpgsql;
