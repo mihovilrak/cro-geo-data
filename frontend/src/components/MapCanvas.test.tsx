@@ -12,10 +12,18 @@ jest.mock('axios', () => ({
 
 // OpenLayers modules and CSS are automatically mocked via moduleNameMapper in package.json
 import MapCanvas from './MapCanvas';
+import { LayerDescriptor } from '../services/types';
 
 describe('MapCanvas', () => {
+  const defaultDescriptor: LayerDescriptor = {
+    id: 'cadastral_parcels',
+    title: 'Cadastral Parcels',
+    wms_name: 'cadastral_parcels',
+    workspace: 'cro-geo-data',
+  };
+
   const defaultProps = {
-    selectedLayers: [],
+    selectedLayers: [] as LayerDescriptor[],
     onFeatureClick: jest.fn(),
     activeBaseLayer: 'OSM' as const,
   };
@@ -58,7 +66,7 @@ describe('MapCanvas', () => {
     const { rerender } = render(
       <MapCanvas
         {...defaultProps}
-        selectedLayers={['cadastral_cadastralparcel']}
+        selectedLayers={[defaultDescriptor]}
       />
     );
     
@@ -70,7 +78,10 @@ describe('MapCanvas', () => {
     rerender(
       <MapCanvas
         {...defaultProps}
-        selectedLayers={['cadastral_cadastralparcel', 'cadastral_administrativeboundary']}
+        selectedLayers={[
+          defaultDescriptor,
+          { ...defaultDescriptor, id: 'admin', wms_name: 'counties', title: 'Counties' },
+        ]}
       />
     );
 

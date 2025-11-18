@@ -1,11 +1,12 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import LayerSwitcher from './LayerSwitcher';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import LayerSwitcher from "./LayerSwitcher";
+import { LayerDescriptor } from "../services/types";
 
-const mockAvailableLayers = [
-  { id: 'layer1', title: 'Cadastral Parcels' },
-  { id: 'layer2', title: 'Administrative Boundaries' },
+const mockAvailableLayers: LayerDescriptor[] = [
+  { id: "layer1", title: "Cadastral Parcels", wms_name: "cadastral_parcels" },
+  { id: "layer2", title: "Administrative Boundaries", wms_name: "counties" },
 ];
 
 const defaultProps = {
@@ -13,7 +14,9 @@ const defaultProps = {
   selectedLayers: [],
   toggleLayer: jest.fn(),
   toggleBase: jest.fn(),
-  activeBase: 'OSM' as const,
+  activeBase: "OSM" as const,
+  isLoading: false,
+  error: undefined,
 };
 
 describe('LayerSwitcher', () => {
@@ -73,7 +76,7 @@ describe('LayerSwitcher', () => {
     render(
       <LayerSwitcher
         {...defaultProps}
-        selectedLayers={['layer1']}
+        selectedLayers={["layer1"]}
       />
     );
     
@@ -103,8 +106,8 @@ describe('LayerSwitcher', () => {
       name: /cadastral parcels/i,
     });
     await user.click(layer1Checkbox);
-    
-    expect(toggleLayer).toHaveBeenCalledWith('layer1');
+
+    expect(toggleLayer).toHaveBeenCalledWith("layer1");
   });
 
   it('should display "No layers available" when availableLayers is empty', () => {
@@ -112,10 +115,35 @@ describe('LayerSwitcher', () => {
       <LayerSwitcher
         {...defaultProps}
         availableLayers={[]}
+        isLoading={false}
       />
     );
     
     expect(screen.getByText(/No layers available/i)).toBeInTheDocument();
+  });
+
+  it('should render loading state', () => {
+    render(
+      <LayerSwitcher
+        {...defaultProps}
+        isLoading
+        availableLayers={[]}
+      />
+    );
+
+    expect(screen.getByText(/Loading layers/i)).toBeInTheDocument();
+  });
+
+  it('should render error state', () => {
+    render(
+      <LayerSwitcher
+        {...defaultProps}
+        availableLayers={[]}
+        error="boom"
+      />
+    );
+
+    expect(screen.getByText(/boom/i)).toBeInTheDocument();
   });
 });
 
