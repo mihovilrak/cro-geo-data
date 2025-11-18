@@ -1,5 +1,7 @@
 # 🇭🇷 Croatia Cadastral & Administrative Web GIS
 
+> ⚠️ **Note**: This project is a work in progress.
+
 This repository contains a **full-stack** Web GIS application for **Croatia's cadastral and administrative** spatial data.
 
 ## 🧱 Tech Stack
