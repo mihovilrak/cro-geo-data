@@ -1,31 +1,106 @@
 from django.conf import settings
-from django.db.models import QuerySet
-from django.utils.functional import cached_property
 from django_filters.rest_framework import DjangoFilterBackend
-import django_filters
 from rest_framework import filters, viewsets
-from rest_framework.request import Request
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework_gis.filters import InBBoxFilter
 
 from .filters import (
     AddressFilterSet,
+    BuildingFilterSet,
+    CadastralMunicipalityFilterSet,
     CadastralParcelFilterSet,
+    CountryFilterSet,
     CountyBoundaryFilterSet,
     MunicipalityBoundaryFilterSet,
+    PostalOfficeFilterSet,
     SettlementFilterSet,
     StreetFilterSet,
+    UsageFilterSet,
 )
-from .models import Address, CadastralParcel, County, Municipality, Settlement, StreetFeature
+from .models import (
+    Address,
+    Building,
+    CadastralMunicipality,
+    CadastralParcel,
+    Country,
+    County,
+    Municipality,
+    PostalOffice,
+    Settlement,
+    StreetFeature,
+    Usage,
+)
 from .serializers import (
     AddressSerializer,
-    AdministrativeBoundarySerializer,
+    BuildingSerializer,
+    CadastralMunicipalitySerializer,
     CadastralParcelSerializer,
+    CountrySerializer,
+    CountySerializer,
+    MunicipalitySerializer,
+    PostalOfficeSerializer,
     SettlementSerializer,
     StreetSerializer,
+    UsageSerializer,
 )
+
+class CountryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only GeoJSON endpoint backed by ``rpj.country``.
+    Supports bbox queries, attribute filters, and fuzzy search.
+    """
+    queryset = Country.objects.all().order_by("name")
+    serializer_class = CountrySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, InBBoxFilter]
+    filterset_class = CountryFilterSet
+    search_fields = ("name",)
+    bbox_filter_field = "geom"
+    bbox_filter_include_overlapping = True
+
+class CountyViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only GeoJSON endpoint backed by ``rpj.counties``.
+    Supports bbox queries, attribute filters, and fuzzy search.
+    """
+    queryset = County.objects.all().order_by("name")
+    serializer_class = CountySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, InBBoxFilter]
+    filterset_class = CountyBoundaryFilterSet
+    search_fields = ("name",)
+    bbox_filter_field = "geom"
+    bbox_filter_include_overlapping = True
+
+class MunicipalityViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only GeoJSON endpoint backed by ``rpj.municipalities``.
+    Supports bbox queries, attribute filters, and fuzzy search.
+    """
+    queryset = (
+        Municipality.objects.select_related("county")
+        .order_by("name")
+    )
+    serializer_class = MunicipalitySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, InBBoxFilter]
+    filterset_class = MunicipalityBoundaryFilterSet
+    search_fields = ("name", "county__name")
+    bbox_filter_field = "geom"
+    bbox_filter_include_overlapping = True
+
+class CadastralMunicipalityViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only GeoJSON endpoint backed by ``dkp.cadastral_municipalities``.
+    Supports bbox queries, attribute filters, and fuzzy search.
+    """
+    queryset = CadastralMunicipality.objects.all().order_by("name")
+    serializer_class = CadastralMunicipalitySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, InBBoxFilter]
+    filterset_class = CadastralMunicipalityFilterSet
+    search_fields = ("name",)
+    bbox_filter_field = "geom"
+    bbox_filter_include_overlapping = True
 
 class CadastralParcelViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -43,59 +118,45 @@ class CadastralParcelViewSet(viewsets.ReadOnlyModelViewSet):
     bbox_filter_field = "geom"
     bbox_filter_include_overlapping = True
 
-class AdministrativeBoundaryViewSet(viewsets.ReadOnlyModelViewSet):
+class BuildingViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Serves either counties or municipalities depending on ``admin_type`` query
-    parameter. Defaults to municipalities to match the frontend expectations.
+    Read-only GeoJSON endpoint backed by ``dkp.buildings``.
+    Supports bbox queries, attribute filters, and fuzzy search.
     """
-    serializer_class = AdministrativeBoundarySerializer
+    queryset = (
+        Building.objects.select_related("cadastral_municipality", "usage")
+        .order_by("id")
+    )
+    serializer_class = BuildingSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, InBBoxFilter]
-    search_fields = ("name",)
+    filterset_class = BuildingFilterSet
+    search_fields = ("building_number", "cadastral_municipality__name", "usage__name")
     bbox_filter_field = "geom"
     bbox_filter_include_overlapping = True
 
-    def get_queryset(self) -> QuerySet[County | Municipality]:
-        """
-        Returns the queryset of counties or municipalities
-        depending on the ``admin_type`` query parameter.
+class PostalOfficeViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only endpoint backed by ``rpj.postal_offices``.
+    Supports attribute filters and fuzzy search.
+    Note: Postal offices do not have geometry.
+    """
+    queryset = PostalOffice.objects.all().order_by("postal_code")
+    serializer_class = PostalOfficeSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = PostalOfficeFilterSet
+    search_fields = ("name", "postal_code")
 
-        Returns:
-            QuerySet[County | Municipality]: The queryset of counties or municipalities.
-        """
-        if self.admin_type == "county":
-            return County.objects.all().order_by("name")
-        return (
-            Municipality.objects.select_related("county")
-            .order_by("name")
-        )
-
-    def get_filterset_class(self) -> type[django_filters.FilterSet]:
-        """
-        Returns the filterset class for counties or municipalities
-        depending on the ``admin_type`` query parameter.
-
-        Returns:
-            type[django_filters.FilterSet]: The filterset class
-                    for counties or municipalities.
-        """
-        if self.admin_type == "county":
-            return CountyBoundaryFilterSet
-        return MunicipalityBoundaryFilterSet
-
-    @cached_property
-    def admin_type(self) -> str:
-        """
-        Normalize the ``admin_type`` query parameter once per request.
-
-        Returns:
-            str: The normalized ``admin_type`` query parameter.
-        """
-
-        value = self.request.query_params.get("admin_type", "municipality")
-        value = value.lower().strip()
-        if value not in {"municipality", "county"}:
-            return "municipality"
-        return value
+class UsageViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only endpoint backed by ``dkp.usages``.
+    Supports attribute filters and fuzzy search.
+    Note: Usage codes do not have geometry.
+    """
+    queryset = Usage.objects.all().order_by("code")
+    serializer_class = UsageSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = UsageFilterSet
+    search_fields = ("name",)
 
 class SettlementViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -130,7 +191,6 @@ class StreetViewSet(viewsets.ReadOnlyModelViewSet):
     )
     bbox_filter_field = "geom"
     bbox_filter_include_overlapping = True
-
 
 class AddressViewSet(viewsets.ReadOnlyModelViewSet):
     """
