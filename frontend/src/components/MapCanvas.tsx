@@ -8,7 +8,7 @@ import { fromLonLat } from "ol/proj";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
 import BaseLayer from "ol/layer/Base";
 import axios from "axios";
-import { MapCanvasProps } from "../services/types";
+import { LayerDescriptor, MapCanvasProps } from "../services/types";
 
 const MapCanvas: React.FC<MapCanvasProps> = ({
   selectedLayers,
@@ -19,10 +19,11 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
   const [mapObject, setMapObject] = useState<Map | null>(null);
   const osmLayerRef = useRef<TileLayer<OSM> | null>(null);
   const dofLayerRef = useRef<TileLayer<TileWMS> | null>(null);
+  const workspace =
+    process.env.REACT_APP_GEOSERVER_WORKSPACE || "cro-geo-data";
 
   useEffect(() => {
     if (!mapObject && mapRef.current) {
-      // Create base layers
       const osmLayer = new TileLayer({
         source: new OSM(),
         visible: activeBaseLayer === "OSM",
@@ -30,13 +31,14 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
       osmLayer.set("title", "OpenStreetMap");
       osmLayerRef.current = osmLayer;
 
-      const geoserverUrl = process.env.REACT_APP_GEOSERVER_URL || "http://localhost:8080/geoserver";
-      
+      const geoserverUrl =
+        process.env.REACT_APP_GEOSERVER_URL || "http://localhost:8080/geoserver";
+
       const dofLayer = new TileLayer({
         source: new TileWMS({
           url: `${geoserverUrl}/wms`,
           params: {
-            LAYERS: "croatia:dof_ortho",   // assume this is configured in GeoServer
+            LAYERS: `${workspace}:dof_ortho`,
             FORMAT: "image/png",
             TRANSPARENT: true,
           },
@@ -48,7 +50,6 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
       dofLayer.set("title", "Croatia DOF");
       dofLayerRef.current = dofLayer;
 
-      // Create initial map
       const initialMap = new Map({
         target: mapRef.current,
         controls: defaultControls().extend([new ScaleLine()]),
@@ -60,17 +61,18 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
         layers: [osmLayer, dofLayer],
       });
 
-      // Click handling for GetFeatureInfo
       initialMap.on("singleclick", async (evt) => {
         const viewResolution = initialMap.getView().getResolution();
         const coordinate = evt.coordinate;
         
-        // Build GetFeatureInfo URL for first selected layer
         if (selectedLayers.length > 0 && viewResolution) {
-          const layerName = selectedLayers[0];
-          const wmsLayers = initialMap.getLayers().getArray().filter(
-            (layer: BaseLayer) => layer.get("title") === layerName
-          ) as TileLayer<TileWMS>[];
+          const descriptor = selectedLayers[0];
+          const wmsLayers = initialMap
+            .getLayers()
+            .getArray()
+            .filter(
+              (candidate: BaseLayer) => candidate.get("title") === descriptor.id
+            ) as TileLayer<TileWMS>[];
 
           if (wmsLayers.length > 0) {
             const source = wmsLayers[0].getSource();
@@ -81,7 +83,7 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
                 "EPSG:3857",
                 { 
                   INFO_FORMAT: "application/json", 
-                  QUERY_LAYERS: `croatia:${layerName}` 
+                  QUERY_LAYERS: `${descriptor.workspace || workspace}:${descriptor.wms_name}` 
                 }
               );
               if (url) {
@@ -101,21 +103,18 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
 
       setMapObject(initialMap);
     }
-
-    // Update base layer visibility
+ 
     if (mapObject && osmLayerRef.current && dofLayerRef.current) {
       osmLayerRef.current.setVisible(activeBaseLayer === "OSM");
       dofLayerRef.current.setVisible(activeBaseLayer === "DOF");
     }
   }, [mapObject, activeBaseLayer, selectedLayers, onFeatureClick]);
 
-  // Update WMS layers when selectedLayers changes
   useEffect(() => {
     if (!mapObject) return;
 
     const geoserverUrl = process.env.REACT_APP_GEOSERVER_URL || "http://localhost:8080/geoserver";
-    
-    // Remove existing WMS layers (keep base layers)
+
     const layersToRemove = mapObject.getLayers().getArray().filter(
       (layer: BaseLayer) => {
         const title = layer.get("title");
@@ -124,13 +123,13 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
     );
     layersToRemove.forEach((layer: BaseLayer) => mapObject.removeLayer(layer));
 
-    // Add new WMS layers
-    selectedLayers.forEach((layerName: string) => {
+    selectedLayers.forEach((layer: LayerDescriptor) => {
+      const layerWorkspace = layer.workspace || workspace;
       const wmsLayer = new TileLayer({
         source: new TileWMS({
           url: `${geoserverUrl}/wms`,
           params: {
-            LAYERS: `croatia:${layerName}`,
+            LAYERS: `${layerWorkspace}:${layer.wms_name}`,
             FORMAT: "image/png",
             TRANSPARENT: true,
           },
@@ -139,10 +138,10 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
         }),
         visible: true,
       });
-      wmsLayer.set("title", layerName);
+      wmsLayer.set("title", layer.id);
       mapObject.addLayer(wmsLayer);
     });
-  }, [mapObject, selectedLayers]);
+  }, [mapObject, selectedLayers, workspace]);
 
   return <div ref={mapRef} className="w-full h-full" />;
 };
