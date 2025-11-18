@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 import aiofiles
 import httpx
 
-import extractor
+from . import extractor
 from logger import logger
 
 BASE_URL    = "https://geoportal.dgu.hr/services/atom/"
