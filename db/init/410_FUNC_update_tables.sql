@@ -361,5 +361,7 @@ BEGIN
 
     VACUUM ANALYZE dkp.buildings;
 
+    REFRESH MATERIALIZED VIEW gs.mv_streets;
+
 END;
 $$ LANGUAGE plpgsql;
