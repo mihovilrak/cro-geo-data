@@ -330,4 +330,3 @@ class TestFilterCombinations:
         assert parcel_id_filter.label == "Parcel identifier"
         municipality_filter = filterset.filters["cadastral_municipality"]
         assert municipality_filter.label == "Cadastral municipality name"
-

@@ -24,7 +24,6 @@ def test_run_full_ingest_task_invokes_pipeline(monkeypatch: pytest.MonkeyPatch) 
     tasks.run_full_ingest.__wrapped__()  # type: ignore[attr-defined]
     assert called_kwargs == {}
 
-
 def test_run_pipeline_calls_steps(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     Test that the run_pipeline task calls the steps.
