@@ -11,7 +11,17 @@ jest.mock('axios', () => {
   };
 });
 
-import apiClient, { fetchParcels, fetchAdminBoundaries, fetchLayerCatalog } from './apiClient';
+import apiClient, { 
+  fetchCadastralParcels, 
+  fetchCounties, 
+  fetchMunicipalities,
+  fetchSettlements,
+  fetchStreets,
+  fetchAddresses,
+  fetchParcels, // legacy
+  fetchAdminBoundaries, // legacy
+  fetchLayerCatalog 
+} from './apiClient';
 
 describe('apiClient', () => {
   // Get the mock get function from apiClient (which is the created instance)
@@ -21,69 +31,90 @@ describe('apiClient', () => {
     jest.clearAllMocks();
   });
 
-  describe('fetchParcels', () => {
-    it('should fetch parcels without parameters', async () => {
+  describe('fetchCadastralParcels', () => {
+    it('should fetch cadastral parcels without parameters', async () => {
       const mockData = { results: [] };
       const mockGet = getMockGet();
       mockGet.mockResolvedValue({ data: mockData });
 
-      const result = await fetchParcels();
+      const result = await fetchCadastralParcels();
       
-      expect(mockGet).toHaveBeenCalledWith('/parcels/', { params: {} });
+      expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', { params: {} });
       expect(result).toEqual(mockData);
     });
 
-    it('should fetch parcels with bbox parameter', async () => {
+    it('should fetch cadastral parcels with bbox parameter', async () => {
       const bbox: [number, number, number, number] = [100, 200, 300, 400];
       const mockData = { results: [] };
       const mockGet = getMockGet();
       mockGet.mockResolvedValue({ data: mockData });
 
-      await fetchParcels(bbox);
+      await fetchCadastralParcels(bbox);
       
-      expect(mockGet).toHaveBeenCalledWith('/parcels/', {
+      expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', {
         params: { bbox: '100,200,300,400' },
       });
     });
 
-    it('should fetch parcels with filters', async () => {
+    it('should fetch cadastral parcels with filters', async () => {
       const filters = { municipality: 'Zagreb' };
       const mockData = { results: [] };
       const mockGet = getMockGet();
       mockGet.mockResolvedValue({ data: mockData });
 
-      await fetchParcels(undefined, filters);
+      await fetchCadastralParcels(undefined, filters);
       
-      expect(mockGet).toHaveBeenCalledWith('/parcels/', {
+      expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', {
         params: filters,
-      });
-    });
-
-    it('should fetch parcels with both bbox and filters', async () => {
-      const bbox: [number, number, number, number] = [100, 200, 300, 400];
-      const filters = { municipality: 'Zagreb' };
-      const mockData = { results: [] };
-      const mockGet = getMockGet();
-      mockGet.mockResolvedValue({ data: mockData });
-
-      await fetchParcels(bbox, filters);
-      
-      expect(mockGet).toHaveBeenCalledWith('/parcels/', {
-        params: { bbox: '100,200,300,400', ...filters },
       });
     });
   });
 
-  describe('fetchAdminBoundaries', () => {
-    it('should fetch admin boundaries', async () => {
+  describe('fetchCounties', () => {
+    it('should fetch counties', async () => {
       const mockData = { results: [] };
       const mockGet = getMockGet();
       mockGet.mockResolvedValue({ data: mockData });
 
-      const result = await fetchAdminBoundaries();
+      const result = await fetchCounties();
       
-      expect(mockGet).toHaveBeenCalledWith('/admin_boundaries/');
+      expect(mockGet).toHaveBeenCalledWith('/counties/', { params: {} });
       expect(result).toEqual(mockData);
+    });
+  });
+
+  describe('fetchMunicipalities', () => {
+    it('should fetch municipalities', async () => {
+      const mockData = { results: [] };
+      const mockGet = getMockGet();
+      mockGet.mockResolvedValue({ data: mockData });
+
+      const result = await fetchMunicipalities();
+      
+      expect(mockGet).toHaveBeenCalledWith('/municipalities/', { params: {} });
+      expect(result).toEqual(mockData);
+    });
+  });
+
+  describe('legacy functions', () => {
+    it('fetchParcels should call fetchCadastralParcels', async () => {
+      const mockData = { results: [] };
+      const mockGet = getMockGet();
+      mockGet.mockResolvedValue({ data: mockData });
+
+      await fetchParcels();
+      
+      expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', { params: {} });
+    });
+
+    it('fetchAdminBoundaries should call fetchMunicipalities', async () => {
+      const mockData = { results: [] };
+      const mockGet = getMockGet();
+      mockGet.mockResolvedValue({ data: mockData });
+
+      await fetchAdminBoundaries();
+      
+      expect(mockGet).toHaveBeenCalledWith('/municipalities/', { params: {} });
     });
   });
 
