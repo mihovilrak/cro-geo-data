@@ -1,0 +1,803 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api/parcels/:
+    get:
+      operationId: listCadastralParcels
+      description: 'Read-only GeoJSON endpoint backed by ``dkp.cadastral_parcels``.
+
+        Supports bbox queries, attribute filters, and fuzzy search.'
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CadastralParcel'
+          description: ''
+      tags:
+      - api
+  /api/parcels/{id}/:
+    get:
+      operationId: retrieveCadastralParcel
+      description: 'Read-only GeoJSON endpoint backed by ``dkp.cadastral_parcels``.
+
+        Supports bbox queries, attribute filters, and fuzzy search.'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique value identifying this Cadastral Parcel.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CadastralParcel'
+          description: ''
+      tags:
+      - api
+  /api/admin_boundaries/:
+    get:
+      operationId: listAdministrativeBoundaries
+      description: 'Serves either counties or municipalities depending on ``admin_type``
+        query
+
+        parameter. Defaults to municipalities to match the frontend expectations.'
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdministrativeBoundary'
+          description: ''
+      tags:
+      - api
+  /api/admin_boundaries/{id}/:
+    get:
+      operationId: retrieveAdministrativeBoundary
+      description: 'Serves either counties or municipalities depending on ``admin_type``
+        query
+
+        parameter. Defaults to municipalities to match the frontend expectations.'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdministrativeBoundary'
+          description: ''
+      tags:
+      - api
+  /api/settlements/:
+    get:
+      operationId: listSettlements
+      description: ''
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Settlement'
+          description: ''
+      tags:
+      - api
+  /api/settlements/{id}/:
+    get:
+      operationId: retrieveSettlement
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique value identifying this Settlement.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settlement'
+          description: ''
+      tags:
+      - api
+  /api/streets/:
+    get:
+      operationId: listStreetFeatures
+      description: ''
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Street'
+          description: ''
+      tags:
+      - api
+  /api/streets/{id}/:
+    get:
+      operationId: retrieveStreetFeature
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique value identifying this Street (materialized view).
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Street'
+          description: ''
+      tags:
+      - api
+  /api/addresses/:
+    get:
+      operationId: listAddresses
+      description: ''
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Address'
+          description: ''
+      tags:
+      - api
+  /api/addresses/{id}/:
+    get:
+      operationId: retrieveAddress
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: A unique value identifying this Address.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: in_bbox
+        required: false
+        in: query
+        description: 'Specify a bounding box as filter: in_bbox=min_lon,min_lat,max_lon,max_lat'
+        schema:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 4
+          maxItems: 4
+          example:
+          - 0
+          - 0
+          - 10
+          - 10
+        style: form
+        explode: false
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+          description: ''
+      tags:
+      - api
+  /api/layers/:
+    get:
+      operationId: listLayerCatalogs
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LayerDescriptor'
+          description: ''
+      tags:
+      - api
+components:
+  schemas:
+    CadastralParcel:
+      type: object
+      properties:
+        id:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        parcel_code:
+          type: string
+          maxLength: 20
+        graphical_area:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 10000000000
+          minimum: -10000000000
+        updated_at:
+          type: string
+          format: date-time
+        cadastral_municipality_code:
+          type: integer
+          readOnly: true
+        cadastral_municipality_name:
+          type: string
+          readOnly: true
+        geom:
+          type: string
+      required:
+      - id
+      - parcel_code
+      - graphical_area
+      - updated_at
+      - geom
+    AdministrativeBoundary:
+      type: object
+      properties:
+        id:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        national_code:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        name:
+          type: string
+          maxLength: 255
+        updated_at:
+          type: string
+          format: date-time
+        admin_type:
+          type: string
+          readOnly: true
+        parent_code:
+          type: string
+          readOnly: true
+        parent_name:
+          type: string
+          readOnly: true
+        geom:
+          type: string
+      required:
+      - id
+      - national_code
+      - name
+      - updated_at
+      - geom
+    Settlement:
+      type: object
+      properties:
+        id:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        national_code:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        name:
+          type: string
+          maxLength: 255
+        municipality_name:
+          type: string
+          readOnly: true
+        county_name:
+          type: string
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+        geom:
+          type: string
+      required:
+      - id
+      - national_code
+      - name
+      - updated_at
+      - geom
+    Street:
+      type: object
+      properties:
+        id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        name:
+          type: string
+          maxLength: 255
+        unique_identifier:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        settlement_code:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        settlement_name:
+          type: string
+          maxLength: 255
+        municipality_name:
+          type: string
+          maxLength: 255
+        county_name:
+          type: string
+          maxLength: 255
+        geom:
+          type: string
+      required:
+      - id
+      - name
+      - unique_identifier
+      - settlement_code
+      - settlement_name
+      - municipality_name
+      - county_name
+      - geom
+    Address:
+      type: object
+      properties:
+        id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        house_number:
+          type: string
+          maxLength: 10
+        street_name:
+          type: string
+          readOnly: true
+        settlement_name:
+          type: string
+          readOnly: true
+        municipality_name:
+          type: string
+          readOnly: true
+        county_name:
+          type: string
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+        geom:
+          type: string
+      required:
+      - id
+      - house_number
+      - updated_at
+      - geom
+    LayerDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal identifier used by the frontend.
+        title:
+          type: string
+        wms_name:
+          type: string
+          description: GeoServer layer name.
+        api_path:
+          type: string
+          nullable: true
+          description: DRF endpoint that returns the same dataset.
+        native_table:
+          type: string
+          nullable: true
+        workspace:
+          type: string
+          nullable: true
+        default:
+          type: boolean
+          default: false
