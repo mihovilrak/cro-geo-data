@@ -3,11 +3,16 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
 from .models import (
     Address,
+    Building,
+    CadastralMunicipality,
     CadastralParcel,
+    Country,
     County,
     Municipality,
+    PostalOffice,
     Settlement,
     StreetFeature,
+    Usage,
 )
 
 class CadastralParcelSerializer(GeoFeatureModelSerializer):
@@ -29,39 +34,6 @@ class CadastralParcelSerializer(GeoFeatureModelSerializer):
             "cadastral_municipality_code",
             "cadastral_municipality_name",
         )
-
-class AdministrativeBoundarySerializer(GeoFeatureModelSerializer):
-    admin_type = serializers.SerializerMethodField()
-    parent_code = serializers.SerializerMethodField()
-    parent_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Municipality
-        geo_field = "geom"
-        fields = (
-            "id",
-            "national_code",
-            "name",
-            "updated_at",
-            "admin_type",
-            "parent_code",
-            "parent_name",
-        )
-
-    def get_admin_type(self, obj) -> str:
-        if isinstance(obj, County):
-            return "county"
-        return "municipality"
-
-    def get_parent_code(self, obj):
-        if isinstance(obj, Municipality) and obj.county_id is not None:
-            return obj.county_id
-        return None
-
-    def get_parent_name(self, obj):
-        if isinstance(obj, Municipality) and obj.county:
-            return obj.county.name
-        return None
 
 class AddressSerializer(GeoFeatureModelSerializer):
     street_name = serializers.CharField(source="street.name", read_only=True)
@@ -120,4 +92,104 @@ class StreetSerializer(GeoFeatureModelSerializer):
             "settlement_name",
             "municipality_name",
             "county_name",
+        )
+
+class CountrySerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = Country
+        geo_field = "geom"
+        fields = (
+            "id",
+            "national_code",
+            "name",
+            "updated_at",
+        )
+
+class CountySerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = County
+        geo_field = "geom"
+        fields = (
+            "id",
+            "national_code",
+            "name",
+            "updated_at",
+        )
+
+class MunicipalitySerializer(GeoFeatureModelSerializer):
+    county_name = serializers.CharField(
+        source="county.name", read_only=True
+    )
+    county_code = serializers.IntegerField(
+        source="county.national_code", read_only=True
+    )
+
+    class Meta:
+        model = Municipality
+        geo_field = "geom"
+        fields = (
+            "id",
+            "national_code",
+            "name",
+            "county_code",
+            "county_name",
+            "updated_at",
+        )
+
+class CadastralMunicipalitySerializer(GeoFeatureModelSerializer):
+    class Meta:
+        model = CadastralMunicipality
+        geo_field = "geom"
+        fields = (
+            "id",
+            "national_code",
+            "name",
+            "harmonization_status",
+            "updated_at",
+        )
+
+class PostalOfficeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostalOffice
+        fields = (
+            "id",
+            "postal_code",
+            "name",
+            "updated_at",
+        )
+
+class BuildingSerializer(GeoFeatureModelSerializer):
+    cadastral_municipality_code = serializers.IntegerField(
+        source="cadastral_municipality.national_code", read_only=True
+    )
+    cadastral_municipality_name = serializers.CharField(
+        source="cadastral_municipality.name", read_only=True
+    )
+    usage_code = serializers.IntegerField(
+        source="usage.code", read_only=True
+    )
+    usage_name = serializers.CharField(
+        source="usage.name", read_only=True
+    )
+
+    class Meta:
+        model = Building
+        geo_field = "geom"
+        fields = (
+            "id",
+            "building_number",
+            "cadastral_municipality_code",
+            "cadastral_municipality_name",
+            "usage_code",
+            "usage_name",
+            "updated_at",
+        )
+
+class UsageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usage
+        fields = (
+            "code",
+            "name",
+            "updated_at",
         )
