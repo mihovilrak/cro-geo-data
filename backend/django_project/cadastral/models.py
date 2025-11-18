@@ -7,6 +7,7 @@ points ``db_table`` to the correct schema-qualified name.  Relationships rely
 on the natural keys that exist in PostGIS (e.g. ``national_code``), so we
 explicitly wire ``to_field``/``db_column`` to avoid surrogate keys.
 """
+
 from django.contrib.gis.db import models
 
 class TimestampedGeometryModel(models.Model):
@@ -19,6 +20,22 @@ class TimestampedGeometryModel(models.Model):
     class Meta:
         abstract = True
         managed = False
+
+class Country(TimestampedGeometryModel):
+    id = models.IntegerField(primary_key=True)
+    national_code = models.IntegerField()
+    name = models.CharField(max_length=255)
+    geom = models.MultiPolygonField(srid=3765)
+
+    class Meta:
+        managed = False
+        db_table = '"rpj"."country"'
+        ordering = ("name",)
+        verbose_name = "Country"
+        verbose_name_plural = "Country"
+
+    def __str__(self) -> str:
+        return self.name
 
 class County(TimestampedGeometryModel):
     id = models.IntegerField(primary_key=True)
@@ -132,7 +149,6 @@ class StreetFeature(models.Model):
     """
     Materialized view that exposes generalized street geometries for mapping.
     """
-
     id = models.BigIntegerField(primary_key=True)
     name = models.CharField(max_length=255)
     unique_identifier = models.BigIntegerField()
@@ -151,7 +167,6 @@ class StreetFeature(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.settlement_name})"
-
 
 class Address(TimestampedGeometryModel):
     id = models.BigIntegerField(primary_key=True)
@@ -174,7 +189,6 @@ class Address(TimestampedGeometryModel):
     def __str__(self) -> str:
         return f"{self.street.name} {self.house_number}"
 
-
 class CadastralMunicipality(TimestampedGeometryModel):
     id = models.IntegerField(primary_key=True)
     national_code = models.IntegerField(unique=True)
@@ -191,7 +205,6 @@ class CadastralMunicipality(TimestampedGeometryModel):
 
     def __str__(self) -> str:
         return f"{self.name} ({self.national_code})"
-
 
 class CadastralParcel(TimestampedGeometryModel):
     id = models.IntegerField(primary_key=True)
@@ -216,4 +229,49 @@ class CadastralParcel(TimestampedGeometryModel):
     def __str__(self) -> str:
         return f"{self.cadastral_municipality.national_code}-{self.parcel_code}"
 
+class Usage(models.Model):
+    """
+    Usage codes for buildings (e.g., residential, commercial).
+    """
+    code = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=255)
+    updated_at = models.DateTimeField()
 
+    class Meta:
+        managed = False
+        db_table = '"dkp"."usages"'
+        ordering = ("code",)
+        verbose_name = "Usage"
+        verbose_name_plural = "Usages"
+
+    def __str__(self) -> str:
+        return f"{self.code} - {self.name}"
+
+class Building(TimestampedGeometryModel):
+    id = models.IntegerField(primary_key=True)
+    building_number = models.IntegerField()
+    usage = models.ForeignKey(
+        Usage,
+        to_field="code",
+        db_column="usage_code",
+        related_name="buildings",
+        on_delete=models.DO_NOTHING,
+    )
+    cadastral_municipality = models.ForeignKey(
+        CadastralMunicipality,
+        to_field="national_code",
+        db_column="cadastral_municipality_code",
+        related_name="buildings",
+        on_delete=models.DO_NOTHING,
+    )
+    geom = models.MultiPolygonField(srid=3765)
+
+    class Meta:
+        managed = False
+        db_table = '"dkp"."buildings"'
+        ordering = ("building_number",)
+        verbose_name = "Building"
+        verbose_name_plural = "Buildings"
+
+    def __str__(self) -> str:
+        return f"Building {self.building_number} ({self.cadastral_municipality.name})"
