@@ -98,10 +98,6 @@ export const fetchAddresses = async (
   return resp.data;
 }
 
-// Legacy function names for backward compatibility (deprecated)
-export const fetchParcels = fetchCadastralParcels;
-export const fetchAdminBoundaries = fetchMunicipalities;
-
 export const fetchLayerCatalog = async (): Promise<LayerDescriptor[]> => {
   const resp = await apiClient.get("/layers/");
   return resp.data;

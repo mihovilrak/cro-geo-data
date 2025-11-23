@@ -1,4 +1,3 @@
-// Note: apiClient creates axios instance at module load, so we need to mock before import
 jest.mock('axios', () => {
   const mockGet = jest.fn();
   const mockInstance = { get: mockGet };
@@ -18,13 +17,10 @@ import apiClient, {
   fetchSettlements,
   fetchStreets,
   fetchAddresses,
-  fetchParcels, // legacy
-  fetchAdminBoundaries, // legacy
   fetchLayerCatalog 
 } from './apiClient';
 
 describe('apiClient', () => {
-  // Get the mock get function from apiClient (which is the created instance)
   const getMockGet = () => (apiClient as any).get as jest.Mock;
 
   beforeEach(() => {
@@ -93,28 +89,6 @@ describe('apiClient', () => {
       
       expect(mockGet).toHaveBeenCalledWith('/municipalities/', { params: {} });
       expect(result).toEqual(mockData);
-    });
-  });
-
-  describe('legacy functions', () => {
-    it('fetchParcels should call fetchCadastralParcels', async () => {
-      const mockData = { results: [] };
-      const mockGet = getMockGet();
-      mockGet.mockResolvedValue({ data: mockData });
-
-      await fetchParcels();
-      
-      expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', { params: {} });
-    });
-
-    it('fetchAdminBoundaries should call fetchMunicipalities', async () => {
-      const mockData = { results: [] };
-      const mockGet = getMockGet();
-      mockGet.mockResolvedValue({ data: mockData });
-
-      await fetchAdminBoundaries();
-      
-      expect(mockGet).toHaveBeenCalledWith('/municipalities/', { params: {} });
     });
   });
 
