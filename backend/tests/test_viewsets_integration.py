@@ -26,9 +26,14 @@ class TestCountryViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert "type" in response.data
-            assert response.data["type"] == "FeatureCollection"
-            assert "features" in response.data
+            if "results" in response.data:
+                assert "type" in response.data["results"]
+                assert response.data["results"]["type"] == "FeatureCollection"
+                assert "features" in response.data["results"]
+            else:
+                assert "type" in response.data
+                assert response.data["type"] == "FeatureCollection"
+                assert "features" in response.data
 
     def test_list_countries_with_search(self, api_client: APIClient) -> None:
         """
@@ -98,7 +103,11 @@ class TestCountyViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_counties_with_search(self, api_client: APIClient) -> None:
         """
@@ -168,7 +177,11 @@ class TestMunicipalityViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_municipalities_with_search(self, api_client: APIClient) -> None:
         """
@@ -258,7 +271,11 @@ class TestSettlementViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_settlements_with_search(self, api_client: APIClient) -> None:
         """
@@ -331,7 +348,11 @@ class TestStreetViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_streets_with_search(self, api_client: APIClient) -> None:
         """
@@ -406,7 +427,11 @@ class TestAddressViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_addresses_with_search(self, api_client: APIClient) -> None:
         """
@@ -480,7 +505,11 @@ class TestCadastralMunicipalityViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_cadastral_municipalities_with_search(self, api_client: APIClient) -> None:
         """
@@ -554,7 +583,11 @@ class TestCadastralParcelViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_cadastral_parcels_with_search(self, api_client: APIClient) -> None:
         """
@@ -642,7 +675,11 @@ class TestBuildingViewSet:
 
         assert response.status_code in STATUS_200_500
         if response.status_code == status.HTTP_200_OK:
-            assert response.data["type"] == "FeatureCollection"
+            # With pagination enabled, GeoJSON is wrapped in results
+            if "results" in response.data:
+                assert response.data["results"]["type"] == "FeatureCollection"
+            else:
+                assert response.data["type"] == "FeatureCollection"
 
     def test_list_buildings_with_search(self, api_client: APIClient) -> None:
         """
