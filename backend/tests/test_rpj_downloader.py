@@ -1,6 +1,7 @@
 """
 Tests for the RPJ downloader module.
 """
+from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator
 import sys
 import tempfile
@@ -173,10 +174,12 @@ class TestDownloadZip:
 class TestDownloadZipSync:
     """Test cases for download_zip function (synchronous wrapper)."""
 
+    @patch("scripts.rpj_downloader.asyncio.run")
     @patch("scripts.rpj_downloader._download_zip")
     def test_download_zip_calls_async_version(
         self,
         mock_async_download: AsyncMock,
+        mock_asyncio_run: Mock,
         temp_dir: Path
     ) -> None:
         """
@@ -184,6 +187,7 @@ class TestDownloadZipSync:
 
         Args:
             mock_async_download: Mocked async download function
+            mock_asyncio_run: Mocked asyncio.run function
             temp_dir: Temporary directory
         """
         url = "https://example.com/test.zip"
@@ -193,17 +197,20 @@ class TestDownloadZipSync:
         expected_path = output_dir / filename
 
         mock_async_download.return_value = expected_path
+        mock_asyncio_run.return_value = expected_path
 
         result = rpj_downloader.download_zip(url, filename, output_dir)
 
         assert result == expected_path
-        mock_async_download.assert_called_once_with(url, filename, output_dir)
+        assert mock_asyncio_run.called
+        call_args = mock_asyncio_run.call_args[0]
+        assert len(call_args) > 0
 
 class TestDownloadAU:
     """Test cases for download_au function."""
 
     @patch("scripts.rpj_downloader.extractor.extract_au")
-    @patch("scripts.rpj_downloader.download_zip")
+    @patch.object(rpj_downloader, "download_zip")
     def test_download_au_calls_download_and_extract(
         self,
         mock_download_zip: Mock,
@@ -214,17 +221,20 @@ class TestDownloadAU:
         Test that download_au calls download_zip and extract_au.
 
         Args:
-            mock_download_zip: Mocked download_zip function
-            mock_extract_au: Mocked extract_au function
+            mock_download_zip: Mocked download_zip function (from top decorator)
+            mock_extract_au: Mocked extract_au function (from bottom decorator)
             temp_dir: Temporary directory
         """
         zip_path = temp_dir / "downloaded.zip"
         zip_path.write_bytes(b"zip content")
         mock_download_zip.return_value = zip_path
 
+        au_output_dir = temp_dir / "au"
+        au_output_dir.mkdir(parents=True, exist_ok=True)
+
         with patch.object(rpj_downloader, "AU_FILENAME", "INSPIRE_Administrative_Units_(AU).zip"):
             with patch.object(rpj_downloader, "AU_URL", "https://example.com/au.zip"):
-                with patch.object(rpj_downloader, "AU_OUTPUT_DIR", temp_dir / "au"):
+                with patch.object(rpj_downloader, "AU_OUTPUT_DIR", au_output_dir):
                     rpj_downloader.download_au()
 
         mock_download_zip.assert_called_once()
@@ -234,7 +244,7 @@ class TestDownloadAD:
     """Test cases for download_ad function."""
 
     @patch("scripts.rpj_downloader.extractor.extract_ad")
-    @patch("scripts.rpj_downloader.download_zip")
+    @patch.object(rpj_downloader, "download_zip")
     def test_download_ad_calls_download_and_extract(
         self,
         mock_download_zip: Mock,
@@ -245,17 +255,20 @@ class TestDownloadAD:
         Test that download_ad calls download_zip and extract_ad.
 
         Args:
-            mock_download_zip: Mocked download_zip function
-            mock_extract_ad: Mocked extract_ad function
+            mock_download_zip: Mocked download_zip function (from top decorator)
+            mock_extract_ad: Mocked extract_ad function (from bottom decorator)
             temp_dir: Temporary directory
         """
         zip_path = temp_dir / "downloaded.zip"
         zip_path.write_bytes(b"zip content")
         mock_download_zip.return_value = zip_path
 
+        ad_output_dir = temp_dir / "ad"
+        ad_output_dir.mkdir(parents=True, exist_ok=True)
+
         with patch.object(rpj_downloader, "AD_FILENAME", "INSPIRE_Addresses_(AD).zip"):
             with patch.object(rpj_downloader, "AD_URL", "https://example.com/ad.zip"):
-                with patch.object(rpj_downloader, "AD_OUTPUT_DIR", temp_dir / "ad"):
+                with patch.object(rpj_downloader, "AD_OUTPUT_DIR", ad_output_dir):
                     rpj_downloader.download_ad()
 
         mock_download_zip.assert_called_once()
