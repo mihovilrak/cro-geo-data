@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useState, useEffect, useMemo } from "react";
 import MapCanvas from "./components/MapCanvas";
 import LayerSwitcher from "./components/LayerSwitcher";

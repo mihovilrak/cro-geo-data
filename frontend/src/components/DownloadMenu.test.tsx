@@ -18,7 +18,6 @@ describe("DownloadMenu", () => {
   };
 
   beforeEach(() => {
-    // Mock environment variable
     process.env.REACT_APP_GEOSERVER_URL = 'http://localhost:8080/geoserver';
   });
 
@@ -29,7 +28,9 @@ describe("DownloadMenu", () => {
   it("should render download menu with layer name", () => {
     render(<DownloadMenu {...defaultProps} />);
     
-    expect(screen.getByText(/Download "Cadastral Parcels"/i)).toBeInTheDocument();
+    expect(screen.getByText(
+      /Download "Cadastral Parcels"/i,
+    )).toBeInTheDocument();
   });
 
   it("should render format dropdown with default GeoJSON selected", () => {
@@ -71,7 +72,6 @@ describe("DownloadMenu", () => {
     expect(href).toBeTruthy();
     expect(href).toContain('/wfs');
     expect(href).toContain('service=WFS');
-    // URL is encoded, so check for encoded colon
     expect(href).toContain('typeName=cro-geo-data%3Acadastral_parcels');
     expect(href).toContain('outputFormat=application%2Fjson');
   });
@@ -83,7 +83,6 @@ describe("DownloadMenu", () => {
     const downloadLink = screen.getByRole('link', { name: /download/i });
     const href = downloadLink.getAttribute('href');
     
-    // URL is encoded
     expect(href).toContain('bbox=100%2C200%2C300%2C400%2CEPSG%3A3857');
   });
 
@@ -97,7 +96,6 @@ describe("DownloadMenu", () => {
     const downloadLink = screen.getByRole('link', { name: /download/i });
     const href = downloadLink.getAttribute('href');
     
-    // URL might be encoded depending on the format
     expect(href).toMatch(/outputFormat=(shape-zip|shape%2Dzip)/);
   });
 

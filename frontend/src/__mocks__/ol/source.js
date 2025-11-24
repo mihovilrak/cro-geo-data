@@ -1,4 +1,3 @@
-// Mock for ol/source
 function MockOSM() {
   return this;
 }

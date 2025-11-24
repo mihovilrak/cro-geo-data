@@ -1,9 +1,10 @@
-// src/components/MetadataPopup.tsx
 import React from "react";
 import { MetadataPopupProps } from "../services/types";
 
-
-const MetadataPopup: React.FC<MetadataPopupProps> = ({ properties, onClose }) => {
+const MetadataPopup: React.FC<MetadataPopupProps> = ({
+  properties,
+  onClose,
+}) => {
   if (!properties) return null;
   
   return (

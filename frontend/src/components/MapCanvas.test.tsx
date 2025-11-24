@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 
-// Mock axios for GetFeatureInfo requests
 jest.mock('axios', () => ({
   __esModule: true,
   default: {
@@ -10,7 +9,6 @@ jest.mock('axios', () => ({
   get: jest.fn(),
 }));
 
-// OpenLayers modules and CSS are automatically mocked via moduleNameMapper in package.json
 import MapCanvas from './MapCanvas';
 import { LayerDescriptor } from '../services/types';
 
@@ -30,7 +28,6 @@ describe('MapCanvas', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock environment variable
     process.env.REACT_APP_GEOSERVER_URL = 'http://localhost:8080/geoserver';
   });
 
@@ -48,7 +45,6 @@ describe('MapCanvas', () => {
   it('should initialize map with OSM base layer when activeBaseLayer is OSM', async () => {
     render(<MapCanvas {...defaultProps} activeBaseLayer="OSM" />);
     
-    // Map initialization happens in useEffect, so we wait a bit
     await waitFor(() => {
       expect(document.querySelector('div')).toBeInTheDocument();
     });
@@ -74,13 +70,17 @@ describe('MapCanvas', () => {
       expect(document.querySelector('div')).toBeInTheDocument();
     });
 
-    // Update selected layers
     rerender(
       <MapCanvas
         {...defaultProps}
         selectedLayers={[
           defaultDescriptor,
-          { ...defaultDescriptor, id: 'admin', wms_name: 'counties', title: 'Counties' },
+          {
+            ...defaultDescriptor,
+            id: 'admin',
+            wms_name: 'counties',
+            title: 'Counties',
+          },
         ]}
       />
     );
@@ -91,8 +91,6 @@ describe('MapCanvas', () => {
   });
 
   it('should handle onFeatureClick callback', () => {
-    // This is more of an integration test - the actual click handling
-    // would require mocking OpenLayers event system more deeply
     render(<MapCanvas {...defaultProps} />);
     
     expect(defaultProps.onFeatureClick).toBeDefined();

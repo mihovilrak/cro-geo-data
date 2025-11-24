@@ -1,4 +1,3 @@
-// src/components/MapCanvas.tsx
 import React, { useEffect, useRef, useState } from "react";
 import "ol/ol.css";
 import { Map, View } from "ol";
@@ -54,7 +53,7 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
         target: mapRef.current,
         controls: defaultControls().extend([new ScaleLine()]),
         view: new View({
-          center: fromLonLat([16.0, 45.5]), // Rough center of Croatia
+          center: fromLonLat([16.0, 45.5]),
           zoom: 7,
           projection: "EPSG:3857",
         }),

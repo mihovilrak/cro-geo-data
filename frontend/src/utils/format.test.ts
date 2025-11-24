@@ -12,15 +12,11 @@ describe('format utilities', () => {
     it('should handle invalid date strings gracefully', () => {
       const invalidDate = 'not-a-date';
       const result = formatDate(invalidDate);
-      // new Date('not-a-date') returns Invalid Date, toLocaleDateString() returns "Invalid Date"
-      // but the catch block should return the original string
-      // Actually, the function might return "Invalid Date" since toLocaleDateString() doesn't throw
       expect(typeof result).toBe('string');
     });
 
     it('should handle empty string', () => {
       const result = formatDate('');
-      // Empty string creates Invalid Date
       expect(typeof result).toBe('string');
     });
   });
@@ -29,7 +25,6 @@ describe('format utilities', () => {
     it('should format a valid number with locale string', () => {
       const num = 1234.56;
       const result = formatNumber(num);
-      // Format depends on locale, but should be a string representation
       expect(typeof result).toBe('string');
       expect(result.length).toBeGreaterThan(0);
     });

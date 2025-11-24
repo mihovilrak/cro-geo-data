@@ -50,8 +50,7 @@ describe('MetadataPopup', () => {
 
   it('should convert all values to strings', () => {
     render(<MetadataPopup {...defaultProps} />);
-    
-    // Number should be converted to string
+
     const value = screen.getByText('5000');
     expect(value).toBeInTheDocument();
   });

@@ -1,4 +1,3 @@
-// Mock for ol main module
 function MockMap(config) {
   this._layers = [];
   this.getView = jest.fn(() => ({
@@ -17,7 +16,6 @@ function MockMap(config) {
       this._layers.splice(index, 1);
     }
   });
-  // Store layers from config if provided
   if (config && config.layers) {
     this._layers = config.layers.slice();
   }

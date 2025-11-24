@@ -1,4 +1,3 @@
-// src/components/DownloadMenu.tsx
 import React, { useState } from "react";
 import { DownloadMenuProps } from "../services/types";
 
@@ -38,7 +37,9 @@ const DownloadMenu: React.FC<DownloadMenuProps> = ({ activeLayer, bbox }) => {
         <select
           className="border p-2 rounded"
           value={format}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormat(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+            setFormat(e.target.value);
+          }}
         >
           {formatOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>

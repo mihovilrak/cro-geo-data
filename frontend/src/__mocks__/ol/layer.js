@@ -1,4 +1,3 @@
-// Mock for ol/layer
 function MockTileLayer(config) {
   this._properties = {};
   this._source = config ? config.source : null;
@@ -20,7 +19,6 @@ function MockTileLayer(config) {
   this.getSource = jest.fn(() => {
     return this._source;
   });
-  // Store config if provided
   if (config) {
     if (config.visible !== undefined) {
       this._properties.visible = config.visible;

@@ -1,4 +1,3 @@
-// src/components/LayerSwitcher.tsx
 import React from "react";
 import { LayerSwitcherProps } from "../services/types";
 

@@ -13,7 +13,7 @@ export interface ParcelProperties {
   parcel_id: string;
   cadastral_municipality: string;
   area_sqm: number;
-  updated_at: string; // ISO Date
+  updated_at: string;
 }
 
 export interface BoundaryProperties {
@@ -25,7 +25,7 @@ export interface BoundaryProperties {
 
 export interface DownloadMenuProps {
   activeLayer: LayerDescriptor;
-  bbox?: [number, number, number, number]; // [minX, minY, maxX, maxY] in EPSG:3857
+  bbox?: [number, number, number, number];
 }
 
 export interface LayerSwitcherProps {

@@ -1,4 +1,3 @@
-// Mock for ol/control
 function MockScaleLine() {
   return this;
 }
