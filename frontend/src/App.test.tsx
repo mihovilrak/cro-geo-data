@@ -3,14 +3,45 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { LayerDescriptor } from './services/types';
+import { fetchLayerCatalog } from './services/apiClient';
 
 const mockCatalog: LayerDescriptor[] = [
-  { id: 'cadastral_parcels', title: 'Cadastral Parcels', wms_name: 'cadastral_parcels', workspace: 'cro-geo-data', default: true },
-  { id: 'counties', title: 'Administrative Boundaries', wms_name: 'counties', workspace: 'cro-geo-data', default: false },
+  {
+    id: 'cadastral_parcels',
+    title: 'Cadastral Parcels',
+    wms_name: 'cadastral_parcels',
+    workspace: 'cro-geo-data',
+    default: true,
+  },
+  {
+    id: 'counties',
+    title: 'Administrative Boundaries',
+    wms_name: 'counties',
+    workspace: 'cro-geo-data',
+    default: false,
+  },
 ];
 
 jest.mock('./services/apiClient', () => ({
-  fetchLayerCatalog: jest.fn().mockResolvedValue(mockCatalog),
+  __esModule: true,
+  fetchLayerCatalog: jest.fn(() =>
+    Promise.resolve([
+      {
+        id: 'cadastral_parcels',
+        title: 'Cadastral Parcels',
+        wms_name: 'cadastral_parcels',
+        workspace: 'cro-geo-data',
+        default: true,
+      },
+      {
+        id: 'counties',
+        title: 'Administrative Boundaries',
+        wms_name: 'counties',
+        workspace: 'cro-geo-data',
+        default: false,
+      },
+    ])
+  ),
 }));
 
 jest.mock('./components/MapCanvas', () => {
@@ -19,7 +50,9 @@ jest.mock('./components/MapCanvas', () => {
       <div data-testid="map-canvas">
         <div>Map Canvas</div>
         <div>
-          Selected Layers: {selectedLayers.map((layer: LayerDescriptor) => layer.id).join(', ')}
+          Selected Layers: {
+            selectedLayers.map((layer: LayerDescriptor) => layer.id).join(', ')
+          }
         </div>
         <div>Base Layer: {activeBaseLayer}</div>
       </div>
@@ -29,7 +62,7 @@ jest.mock('./components/MapCanvas', () => {
 
 describe('App', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    (fetchLayerCatalog as jest.Mock).mockResolvedValue(mockCatalog);
   });
 
   it('should render navbar', () => {
@@ -51,8 +84,14 @@ describe('App', () => {
   it('should initialize with available layers', async () => {
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText(/Cadastral Parcels/i)).toBeInTheDocument();
-      expect(screen.getByText(/Administrative Boundaries/i)).toBeInTheDocument();
+      expect(screen.getByRole(
+        'checkbox',
+        { name: /cadastral parcels/i },
+      )).toBeInTheDocument();
+      expect(screen.getByRole(
+        'checkbox',
+        { name: /administrative boundaries/i },
+      )).toBeInTheDocument();
     });
   });
 
@@ -76,33 +115,29 @@ describe('App', () => {
   it('should toggle layer selection when checkbox is clicked', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await waitFor(() => {
-      expect(screen.getByText(/Cadastral Parcels/i)).toBeInTheDocument();
+    const layer2Checkbox = await screen.findByRole('checkbox', {
+      name: /administrative boundaries/i,
     });
-    const layer1Checkbox = screen.getByRole('checkbox', {
-      name: /cadastral parcels/i,
-    });
-    await user.click(layer1Checkbox);
-    expect(layer1Checkbox).toBeChecked();
+    expect(layer2Checkbox).not.toBeChecked();
+    await user.click(layer2Checkbox);
+    expect(layer2Checkbox).toBeChecked();
     await waitFor(() => {
       const mapText = screen.getByText(/Selected Layers:/i);
-      expect(mapText).toHaveTextContent(/cadastral_parcels/i);
+      expect(mapText).toHaveTextContent(/counties/i);
     });
   });
 
   it('should deselect layer when clicked again', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await waitFor(() => {
-      expect(screen.getByText(/Cadastral Parcels/i)).toBeInTheDocument();
-    });
-    const layer1Checkbox = screen.getByRole('checkbox', {
+    const layer1Checkbox = await screen.findByRole('checkbox', {
       name: /cadastral parcels/i,
     });
-    await user.click(layer1Checkbox);
     expect(layer1Checkbox).toBeChecked();
     await user.click(layer1Checkbox);
     expect(layer1Checkbox).not.toBeChecked();
+    await user.click(layer1Checkbox);
+    expect(layer1Checkbox).toBeChecked();
   });
 
   it('should not show metadata popup initially', () => {
@@ -116,33 +151,26 @@ describe('App', () => {
   });
 
   it('should show download menu when a layer is selected', async () => {
-    const user = userEvent.setup();
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText(/Cadastral Parcels/i)).toBeInTheDocument();
-    });
-    const layer1Checkbox = screen.getByRole('checkbox', {
-      name: /cadastral parcels/i,
-    });
-    await user.click(layer1Checkbox);
-    await waitFor(() => {
-      expect(screen.getByRole('link', { name: /download/i })).toBeInTheDocument();
+      expect(screen.getByRole(
+        'link',
+        { name: /download/i },
+      )).toBeInTheDocument();
     });
   });
 
   it('should handle multiple layer selection', async () => {
     const user = userEvent.setup();
     render(<App />);
-    await waitFor(() => {
-      expect(screen.getByText(/Cadastral Parcels/i)).toBeInTheDocument();
-    });
-    const layer1Checkbox = screen.getByRole('checkbox', {
+    const layer1Checkbox = await screen.findByRole('checkbox', {
       name: /cadastral parcels/i,
     });
-    const layer2Checkbox = screen.getByRole('checkbox', {
+    const layer2Checkbox = await screen.findByRole('checkbox', {
       name: /administrative boundaries/i,
     });
-    await user.click(layer1Checkbox);
+    expect(layer1Checkbox).toBeChecked();
+    expect(layer2Checkbox).not.toBeChecked();
     await user.click(layer2Checkbox);
     expect(layer1Checkbox).toBeChecked();
     expect(layer2Checkbox).toBeChecked();
@@ -157,14 +185,18 @@ describe('App', () => {
     const user = userEvent.setup();
     render(<App />);
     await waitFor(() => {
-      expect(screen.getByText(/Cadastral Parcels/i)).toBeInTheDocument();
+      expect(screen.getByText(
+        /Download "Cadastral Parcels"/i,
+      )).toBeInTheDocument();
     });
-    const layer1Checkbox = screen.getByRole('checkbox', {
-      name: /cadastral parcels/i,
+    const layer2Checkbox = await screen.findByRole('checkbox', {
+      name: /administrative boundaries/i,
     });
-    await user.click(layer1Checkbox);
+    await user.click(layer2Checkbox);
     await waitFor(() => {
-      expect(screen.getByText(/Download "Cadastral Parcels"/i)).toBeInTheDocument();
+      expect(screen.getByText(
+        /Download "Administrative Boundaries"/i,
+      )).toBeInTheDocument();
     });
   });
 });
