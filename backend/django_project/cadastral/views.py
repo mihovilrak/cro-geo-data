@@ -14,6 +14,7 @@ from .filters import (
     CadastralParcelFilterSet,
     CountryFilterSet,
     CountyBoundaryFilterSet,
+    ETLRunFilterSet,
     MunicipalityBoundaryFilterSet,
     PostalOfficeFilterSet,
     SettlementFilterSet,
@@ -33,6 +34,8 @@ from .models import (
     StreetFeature,
     Usage,
 )
+from .etl_models import ETLRun
+from .etl_serializers import ETLRunSerializer
 from .serializers import (
     AddressSerializer,
     BuildingSerializer,
@@ -229,3 +232,19 @@ class LayerCatalogView(APIView):
         and the ETL/GeoServer automation.
         """
         return Response(settings.LAYER_CATALOG)
+
+class ETLRunViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only endpoint for ETL pipeline run history.
+
+    Provides access to journal.etl_runs table showing:
+    - Run start/completion times
+    - Success/failure status
+    - Record counts (inserted/deleted/updated)
+    - Duration and error messages
+    """
+    queryset = ETLRun.objects.all()
+    serializer_class = ETLRunSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_class = ETLRunFilterSet
+    search_fields = ["error_message"]

@@ -2,18 +2,17 @@
 Celery tasks orchestrating the ETL pipeline and GeoServer automation.
 """
 from __future__ import annotations
-
-import logging
 from pathlib import Path
 
 from celery import shared_task
 from django.db import connection
 
+from cadastral.etl_journaling import track_etl_run
 from geoserver_integration.publisher import publish_layers
 from scripts.dkp_downloader import DKPDownloader
 from scripts import extractor, rpj_downloader
 
-logger = logging.getLogger(__name__)
+from logger import logger
 
 @shared_task
 def run_full_ingest() -> None:
@@ -42,18 +41,28 @@ def run_pipeline(
         perform_downloads,
         publish_to_geoserver,
     )
-    if perform_downloads:
-        download_and_extract_sources()
-    else:
-        logger.info("Skipping download/extraction step")
 
-    apply_database_refresh()
+    with track_etl_run(
+        downloads_performed=perform_downloads,
+        geoserver_published=publish_to_geoserver,
+    ) as tracker:
+        if perform_downloads:
+            download_and_extract_sources()
+        else:
+            logger.info("Skipping download/extraction step")
 
-    if publish_to_geoserver:
-        logger.info("Publishing layers to GeoServer")
-        publish_layers()
-    else:
-        logger.info("Skipping GeoServer publication step")
+        apply_database_refresh()
+
+        if publish_to_geoserver:
+            logger.info("Publishing layers to GeoServer")
+            try:
+                publish_layers()
+                tracker.update_geoserver_status(True)
+            except Exception as e:
+                logger.exception("GeoServer publishing failed: %s", e)
+                tracker.update_geoserver_status(False)
+        else:
+            logger.info("Skipping GeoServer publication step")
 
     logger.info("Pipeline complete")
 
@@ -79,7 +88,6 @@ def download_and_extract_sources(max_concurrent_downloads: int = 5) -> None:
     rpj_downloader.download_au()
     logger.info("Downloading AD dataset")
     rpj_downloader.download_ad()
-
 
 def apply_database_refresh() -> None:
     """

@@ -27,6 +27,7 @@ from .views import (
     CadastralParcelViewSet,
     CountryViewSet,
     CountyViewSet,
+    ETLRunViewSet,
     LayerCatalogView,
     MunicipalityViewSet,
     PostalOfficeViewSet,
@@ -53,6 +54,7 @@ router.register(
 )
 router.register(r"buildings", BuildingViewSet, basename="building")
 router.register(r"usages", UsageViewSet, basename="usage")
+router.register(r"etl/runs", ETLRunViewSet, basename="etlrun")
 
 urlpatterns = [
     path("", include(router.urls)),

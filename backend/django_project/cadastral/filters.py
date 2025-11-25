@@ -3,6 +3,7 @@ Reusable ``django-filter`` filter sets for GeoDjango viewsets.
 """
 import django_filters
 
+from .etl_models import ETLRun
 from .models import (
     Address,
     Building,
@@ -242,4 +243,32 @@ class UsageFilterSet(django_filters.FilterSet):
         fields = (
             "code",
             "name",
+        )
+
+class ETLRunFilterSet(django_filters.FilterSet):
+    """
+    Filter set for ETL runs.
+    """
+    status = django_filters.ChoiceFilter(
+        choices=[("running", "Running"), ("completed", "Completed"), ("failed", "Failed")]
+    )
+    started_after = django_filters.IsoDateTimeFilter(
+        field_name="started_at",
+        lookup_expr="gte",
+        label="Started after (ISO 8601)",
+    )
+    started_before = django_filters.IsoDateTimeFilter(
+        field_name="started_at",
+        lookup_expr="lte",
+        label="Started before (ISO 8601)",
+    )
+
+    class Meta:
+        model = ETLRun
+        fields = (
+            "status",
+            "downloads_performed",
+            "geoserver_published",
+            "started_after",
+            "started_before",
         )
