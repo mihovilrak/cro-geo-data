@@ -3,11 +3,12 @@ import "ol/ol.css";
 import { Map, View } from "ol";
 import { Tile as TileLayer } from "ol/layer";
 import { OSM, TileWMS } from "ol/source";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 import { defaults as defaultControls, ScaleLine } from "ol/control";
 import BaseLayer from "ol/layer/Base";
 import axios from "axios";
 import { LayerDescriptor, MapCanvasProps } from "../services/types";
+import { getFeatureInfo } from "../services/apiClient";
 
 const MapCanvas: React.FC<MapCanvasProps> = ({
   selectedLayers,
@@ -61,38 +62,59 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
       });
 
       initialMap.on("singleclick", async (evt) => {
-        const viewResolution = initialMap.getView().getResolution();
         const coordinate = evt.coordinate;
-        
-        if (selectedLayers.length > 0 && viewResolution) {
-          const descriptor = selectedLayers[0];
-          const wmsLayers = initialMap
-            .getLayers()
-            .getArray()
-            .filter(
-              (candidate: BaseLayer) => candidate.get("title") === descriptor.id
-            ) as TileLayer<TileWMS>[];
 
-          if (wmsLayers.length > 0) {
-            const source = wmsLayers[0].getSource();
-            if (source instanceof TileWMS) {
-              const url = source.getFeatureInfoUrl(
-                coordinate,
-                viewResolution,
-                "EPSG:3857",
-                { 
-                  INFO_FORMAT: "application/json", 
-                  QUERY_LAYERS: `${descriptor.workspace || workspace}:${descriptor.wms_name}` 
-                }
-              );
-              if (url) {
-                try {
-                  const resp = await axios.get(url);
-                  if (resp.data && resp.data.features && resp.data.features.length > 0) {
-                    onFeatureClick(resp.data.features[0].properties);
+        if (selectedLayers.length > 0) {
+          const descriptor = selectedLayers[0];
+
+          const [lon, lat] = toLonLat(coordinate, "EPSG:3857");
+
+          try {
+            const response = await getFeatureInfo({
+              lat,
+              lon,
+              layer: descriptor.id,
+              srid: 4326,
+            });
+
+            if (response && response.features && response.features.length > 0) {
+              const feature = response.features[0];
+              const properties = feature.properties || feature;
+              onFeatureClick(properties);
+            }
+          } catch (error) {
+            console.error("GetFeatureInfo error:", error);
+            const viewResolution = initialMap.getView().getResolution();
+            if (viewResolution) {
+              const wmsLayers = initialMap
+                .getLayers()
+                .getArray()
+                .filter(
+                  (candidate: BaseLayer) => candidate.get("title") === descriptor.id
+                ) as TileLayer<TileWMS>[];
+
+              if (wmsLayers.length > 0) {
+                const source = wmsLayers[0].getSource();
+                if (source instanceof TileWMS) {
+                  const url = source.getFeatureInfoUrl(
+                    coordinate,
+                    viewResolution,
+                    "EPSG:3857",
+                    {
+                      INFO_FORMAT: "application/json",
+                      QUERY_LAYERS: `${descriptor.workspace || workspace}:${descriptor.wms_name}`
+                    }
+                  );
+                  if (url) {
+                    try {
+                      const resp = await axios.get(url);
+                      if (resp.data && resp.data.features && resp.data.features.length > 0) {
+                        onFeatureClick(resp.data.features[0].properties);
+                      }
+                    } catch (fallbackError) {
+                      console.error("GeoServer GetFeatureInfo fallback error:", fallbackError);
+                    }
                   }
-                } catch (error) {
-                  console.error("GetFeatureInfo error:", error);
                 }
               }
             }
@@ -102,7 +124,7 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
 
       setMapObject(initialMap);
     }
- 
+
     if (mapObject && osmLayerRef.current && dofLayerRef.current) {
       osmLayerRef.current.setVisible(activeBaseLayer === "OSM");
       dofLayerRef.current.setVisible(activeBaseLayer === "DOF");
