@@ -103,4 +103,47 @@ export const fetchLayerCatalog = async (): Promise<LayerDescriptor[]> => {
   return resp.data;
 }
 
+export interface GetFeatureInfoParams {
+  lat: number;
+  lon: number;
+  layer?: string;
+  tolerance?: number;
+  srid?: number;
+}
+
+export interface GetFeatureInfoResponse {
+  type: "FeatureCollection";
+  features: any[];
+  query: {
+    lat: number;
+    lon: number;
+    layer?: string;
+    tolerance?: string;
+  };
+}
+
+export const getFeatureInfo = async (
+  params: GetFeatureInfoParams
+): Promise<GetFeatureInfoResponse> => {
+  const queryParams: Record<string, string> = {
+    lat: params.lat.toString(),
+    lon: params.lon.toString(),
+  };
+
+  if (params.layer) {
+    queryParams.layer = params.layer;
+  }
+
+  if (params.tolerance !== undefined) {
+    queryParams.tolerance = params.tolerance.toString();
+  }
+
+  if (params.srid !== undefined) {
+    queryParams.srid = params.srid.toString();
+  }
+
+  const resp = await apiClient.get("/features/info/", { params: queryParams });
+  return resp.data;
+}
+
 export default apiClient;
