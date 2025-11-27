@@ -19,6 +19,13 @@
 - Serializers emit derived metadata (e.g., parent county names) and PostGIS connectivity defaults to the env-driven PostGIS DSN with an opt-in SQLite fallback for local dev.
 - FilterSets (`cadastral/filters.py`) capture friendly query params like `parcel_id`, `cadastral_municipality`, and `admin_type`.
 - Settlements, streets (materialized view) and addresses ship with dedicated serializers/viewsets + documentation in `docs/api.md` and `docs/openapi.yaml`.
+- **Phase 2 Enhancements (COMPLETED)**:
+  - Redis caching configured for bbox queries (`cadastral/cache_utils.py`) with configurable timeouts and key generation.
+  - Custom pagination class (`cadastral/pagination.py`) for large datasets with optional count skipping.
+  - Throttling policies added to DRF settings (100/hour anonymous, 1000/hour authenticated).
+  - Database query optimizations with `select_related` and `prefetch_related` in viewsets.
+  - GetFeatureInfo proxy endpoint (`/api/features/info/`) that queries PostGIS directly and returns enriched metadata with parent relationships.
+  - Frontend updated to use DRF GetFeatureInfo endpoint instead of direct GeoServer calls, with fallback support.
 
 ### Automation & Scheduling
 - Celery worker + beat services (`docker-compose.yml`) execute `cadastral.tasks.run_full_ingest` every Sunday at 02:00, chaining downloads → SQL refresh → GeoServer publication.
@@ -42,29 +49,25 @@
 - `.gitignore`, VS Code settings, and env templates are already curated.
 
 ## 🚧 Partially Implemented / Needs Integration
-- **GeoDjango coverage gaps**: Endpoints exist for settlements/streets/addresses, but pagination/performance tuning plus bbox-driven caching are pending; address metadata still lacks ownership/usage joins.
 - **ETL orchestration**: Celery Beat now triggers the ingest pipeline, but we still lack run metadata/journaling, retry policies, and visibility into failures.
 - **GeoServer linkage**: REST payloads/SLDs are ready, yet the Docker stack does not invoke `geoserver/scripts/init.sh` automatically, and no .env wiring feeds DB credentials to that script.
-- **Frontend ↔ API**: Layer catalog + download UI is live, but GetFeatureInfo still hits GeoServer directly and bypasses the richer DRF metadata.
 - **Testing/CI**: Frontend has Jest coverage and backend scripts have pytest, but there are no integration tests hitting Django viewsets nor an automated CI workflow.
 
 ## ⏳ Pending Implementation (Priority Order)
-1. **Broaden GeoDjango API surface**: extend pagination tuning, add bbox caching and expose ownership/usage attributes for addresses/streets.
-2. **Document and harden API contracts**: finish examples + error handling in `docs/api.md`, keep OpenAPI in sync, and add DRF integration tests once fixtures exist.
-3. **Integrate ETL pipeline**: wire Celery run metadata into `journal` tables, expose health endpoints, and persist run history for observability.
-4. **Automate GeoServer publishing**: hook `geoserver/scripts/init.sh` (or an init container) into docker lifecycle so first boot publishes layers without manual steps.
-5. **Frontend data plumbing**: surface backend metadata (counts, last updated) in UI and pipe GetFeatureInfo responses through DRF for enriched detail.
-6. **Authentication & roles**: per roadmap, add Django auth/JWT plus nginx/GeoServer security configuration.
-7. **CI/CD & QA**: introduce GitHub Actions (lint, pytest, frontend tests), add coverage for Django code, and document acceptance tests.
-8. **Production hardening**: TLS cert automation, secrets management, logging/monitoring stack, and performance tuning for large datasets.
+1. **Document and harden API contracts**: finish examples + error handling in `docs/api.md`, keep OpenAPI in sync, and add DRF integration tests once fixtures exist.
+2. **Integrate ETL pipeline**: wire Celery run metadata into `journal` tables, expose health endpoints, and persist run history for observability.
+3. **Automate GeoServer publishing**: hook `geoserver/scripts/init.sh` (or an init container) into docker lifecycle so first boot publishes layers without manual steps.
+4. **Frontend metadata enhancements**: surface backend metadata (counts, last updated) in UI and add loading states/error handling for GetFeatureInfo.
+5. **Authentication & roles**: per roadmap, add Django auth/JWT plus nginx/GeoServer security configuration.
+6. **CI/CD & QA**: introduce GitHub Actions (lint, pytest, frontend tests), add coverage for Django code, and document acceptance tests.
+7. **Production hardening**: TLS cert automation, secrets management, logging/monitoring stack, and performance tuning for large datasets.
 
 ## 🎯 Next Steps
-1. Fine-tune the new GeoDjango endpoints (throttle policies, bbox caching) and expose richer metadata for addresses/streets.
-2. Keep `docs/api.md` + `docs/openapi.yaml` aligned by adding automated schema generation in CI.
-3. Extend ETL observability: log run metadata to the `journal` schema and publish Prometheus metrics from Celery.
-4. Automate GeoServer init (docker hook or management command) so new environments publish layers immediately after `docker-compose up`.
-5. Connect the frontend metadata panels to DRF endpoints (GetFeatureInfo proxy) for consistent attribute displays.
-6. Add CI automation plus backend API tests covering permissions, pagination, and geometry serialization.
+1. Keep `docs/api.md` + `docs/openapi.yaml` aligned by adding automated schema generation in CI.
+2. Extend ETL observability: log run metadata to the `journal` schema and publish Prometheus metrics from Celery.
+3. Automate GeoServer init (docker hook or management command) so new environments publish layers immediately after `docker-compose up`.
+4. Enhance frontend metadata display: add loading states, error handling, and show data freshness indicators.
+5. Add CI automation plus backend API tests covering permissions, pagination, and geometry serialization.
 
 ## 🔍 What Works Right Now
 1. **Frontend UI**: `npm start` (or `docker-compose up frontend`) renders the Croatia map, layer switcher, metadata/download components, and passes RTL tests without hitting live data.
