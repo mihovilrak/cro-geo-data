@@ -35,6 +35,7 @@ from .views import (
     StreetViewSet,
     UsageViewSet,
 )
+from .feature_info import GetFeatureInfoView
 
 router = DefaultRouter()
 router.register(r"country", CountryViewSet, basename="country")
@@ -59,4 +60,5 @@ router.register(r"etl/runs", ETLRunViewSet, basename="etlrun")
 urlpatterns = [
     path("", include(router.urls)),
     path("layers/", LayerCatalogView.as_view(), name="layer-catalog"),
+    path("features/info/", GetFeatureInfoView.as_view(), name="feature-info"),
 ]
