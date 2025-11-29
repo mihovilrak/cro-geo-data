@@ -15,6 +15,29 @@ export interface LayerStats {
   error?: string;
 }
 
+export interface LayerStatsResponse {
+  layers: Record<string, LayerStats>;
+}
+
+export interface GetFeatureInfoParams {
+  lat: number;
+  lon: number;
+  layer?: string;
+  tolerance?: number;
+  srid?: number;
+}
+
+export interface GetFeatureInfoResponse {
+  type: "FeatureCollection";
+  features: any[];
+  query: {
+    lat: number;
+    lon: number;
+    layer?: string;
+    tolerance?: string;
+  };
+}
+
 export interface ParcelProperties {
   ogc_fid: number;
   parcel_id: string;

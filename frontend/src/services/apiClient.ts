@@ -1,5 +1,10 @@
 import axios from "axios";
-import { LayerDescriptor } from "./types";
+import {
+  LayerDescriptor,
+  LayerStatsResponse,
+  GetFeatureInfoParams,
+  GetFeatureInfoResponse,
+} from "./types";
 
 const apiClient = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8000/api",
@@ -103,40 +108,10 @@ export const fetchLayerCatalog = async (): Promise<LayerDescriptor[]> => {
   return resp.data;
 }
 
-export interface LayerStats {
-  count: number | null;
-  last_updated: string | null;
-  freshness_days: number | null;
-  error?: string;
-}
-
-export interface LayerStatsResponse {
-  layers: Record<string, LayerStats>;
-}
-
 export const fetchLayerStats = async (): Promise<LayerStatsResponse> => {
   const resp = await apiClient.get("/layers/stats/");
   return resp.data;
 };
-
-export interface GetFeatureInfoParams {
-  lat: number;
-  lon: number;
-  layer?: string;
-  tolerance?: number;
-  srid?: number;
-}
-
-export interface GetFeatureInfoResponse {
-  type: "FeatureCollection";
-  features: any[];
-  query: {
-    lat: number;
-    lon: number;
-    layer?: string;
-    tolerance?: string;
-  };
-}
 
 export const getFeatureInfo = async (
   params: GetFeatureInfoParams
