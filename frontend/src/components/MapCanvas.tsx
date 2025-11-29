@@ -14,6 +14,8 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
   selectedLayers,
   onFeatureClick,
   activeBaseLayer,
+  onFeatureInfoLoading,
+  onFeatureInfoError,
 }) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const [mapObject, setMapObject] = useState<Map | null>(null);
@@ -66,8 +68,14 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
 
         if (selectedLayers.length > 0) {
           const descriptor = selectedLayers[0];
-
           const [lon, lat] = toLonLat(coordinate, "EPSG:3857");
+
+          if (onFeatureInfoLoading) {
+            onFeatureInfoLoading(true);
+          }
+          if (onFeatureInfoError) {
+            onFeatureInfoError(null);
+          }
 
           try {
             const response = await getFeatureInfo({
@@ -81,9 +89,17 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
               const feature = response.features[0];
               const properties = feature.properties || feature;
               onFeatureClick(properties);
+            } else {
+              if (onFeatureInfoError) {
+                onFeatureInfoError("No features found at this location");
+              }
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error("GetFeatureInfo error:", error);
+            const errorMessage = error?.response?.data?.error
+              || error?.message
+              || "Failed to fetch feature information";
+            
             const viewResolution = initialMap.getView().getResolution();
             if (viewResolution) {
               const wmsLayers = initialMap
@@ -110,13 +126,43 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
                       const resp = await axios.get(url);
                       if (resp.data && resp.data.features && resp.data.features.length > 0) {
                         onFeatureClick(resp.data.features[0].properties);
+                        if (onFeatureInfoError) {
+                          onFeatureInfoError(null);
+                        }
+                      } else {
+                        if (onFeatureInfoError) {
+                          onFeatureInfoError("No features found at this location");
+                        }
                       }
-                    } catch (fallbackError) {
+                    } catch (fallbackError: any) {
                       console.error("GeoServer GetFeatureInfo fallback error:", fallbackError);
+                      if (onFeatureInfoError) {
+                        onFeatureInfoError("Failed to fetch feature information from server");
+                      }
+                    }
+                  } else {
+                    if (onFeatureInfoError) {
+                      onFeatureInfoError(errorMessage);
                     }
                   }
+                } else {
+                  if (onFeatureInfoError) {
+                    onFeatureInfoError(errorMessage);
+                  }
+                }
+              } else {
+                if (onFeatureInfoError) {
+                  onFeatureInfoError(errorMessage);
                 }
               }
+            } else {
+              if (onFeatureInfoError) {
+                onFeatureInfoError(errorMessage);
+              }
+            }
+          } finally {
+            if (onFeatureInfoLoading) {
+              onFeatureInfoLoading(false);
             }
           }
         }

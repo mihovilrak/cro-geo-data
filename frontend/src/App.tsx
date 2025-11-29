@@ -4,8 +4,8 @@ import LayerSwitcher from "./components/LayerSwitcher";
 import MetadataPopup from "./components/MetadataPopup";
 import DownloadMenu from "./components/DownloadMenu";
 import Navbar from "./components/Navbar";
-import { fetchLayerCatalog } from "./services/apiClient";
-import { LayerDescriptor } from "./services/types";
+import { fetchLayerCatalog, fetchLayerStats } from "./services/apiClient";
+import { LayerDescriptor, LayerStats } from "./services/types";
 
 const App: React.FC = () => {
   const [availableLayers, setAvailableLayers] = useState<LayerDescriptor[]>([]);
@@ -15,23 +15,32 @@ const App: React.FC = () => {
   const [currentLayerId, setCurrentLayerId] = useState<string>("");
   const [layerError, setLayerError] = useState<string>();
   const [layerLoading, setLayerLoading] = useState<boolean>(false);
+  const [layerStats, setLayerStats] = useState<Record<string, LayerStats>>({});
+  const [featureInfoLoading, setFeatureInfoLoading] = useState<boolean>(false);
+  const [featureInfoError, setFeatureInfoError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
     setLayerLoading(true);
-    fetchLayerCatalog()
-      .then((layers) => {
+
+    Promise.all([fetchLayerCatalog(), fetchLayerStats()])
+      .then(([layers, statsResponse]) => {
         if (!mounted) return;
         setAvailableLayers(layers);
-        const defaults = layers.filter((layer) => layer.default).map((layer) => layer.id);
+        setLayerStats(statsResponse.layers);
+        const defaults = layers.filter(
+          (layer) => layer.default
+        ).map((layer) => layer.id);
         setSelectedLayerIds(defaults);
         setCurrentLayerId(defaults[0] ?? "");
       })
-      .catch(() => {
+      .catch((error) => {
         if (!mounted) return;
+        console.error("Error loading layers:", error);
         setLayerError("Unable to load layer catalog");
       })
       .finally(() => mounted && setLayerLoading(false));
+    
     return () => {
       mounted = false;
     };
@@ -85,6 +94,7 @@ const App: React.FC = () => {
             activeBase={activeBase}
             isLoading={layerLoading}
             error={layerError}
+            layerStats={layerStats}
           />
           {featureProps && (
             <MetadataPopup
@@ -96,11 +106,55 @@ const App: React.FC = () => {
             <DownloadMenu activeLayer={currentLayerDescriptor} bbox={bbox} />
           )}
         </aside>
-        <main className="flex-1">
+        <main className="flex-1 relative">
+          {featureInfoLoading && (
+            <div
+              className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 text-white px-4 py-2 rounded shadow-lg flex items-center gap-2"
+            >
+              <svg
+                className="animate-spin h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span>Loading feature information...</span>
+            </div>
+          )}
+          {featureInfoError && (
+            <div
+              className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-2 rounded shadow-lg flex items-center gap-2"
+            >
+              <span>⚠️</span>
+              <span>{featureInfoError}</span>
+              <button
+                onClick={() => setFeatureInfoError(null)}
+                className="ml-2 hover:bg-red-600 rounded px-2"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <MapCanvas
             selectedLayers={selectedLayerDescriptors}
             onFeatureClick={handleFeatureClick}
             activeBaseLayer={activeBase}
+            onFeatureInfoLoading={setFeatureInfoLoading}
+            onFeatureInfoError={setFeatureInfoError}
           />
         </main>
       </div>

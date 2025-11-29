@@ -8,6 +8,13 @@ export interface LayerDescriptor {
   default?: boolean;
 }
 
+export interface LayerStats {
+  count: number | null;
+  last_updated: string | null;
+  freshness_days: number | null;
+  error?: string;
+}
+
 export interface ParcelProperties {
   ogc_fid: number;
   parcel_id: string;
@@ -36,12 +43,15 @@ export interface LayerSwitcherProps {
   toggleLayer: (layerId: string) => void;
   isLoading: boolean;
   error?: string;
+  layerStats?: Record<string, LayerStats>;
 }
 
 export interface MapCanvasProps {
   selectedLayers: LayerDescriptor[];
   onFeatureClick: (properties: any) => void;
   activeBaseLayer: "OSM" | "DOF";
+  onFeatureInfoLoading?: (loading: boolean) => void;
+  onFeatureInfoError?: (error: string | null) => void;
 }
 
 export interface MetadataPopupProps {

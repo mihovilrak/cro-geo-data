@@ -103,6 +103,22 @@ export const fetchLayerCatalog = async (): Promise<LayerDescriptor[]> => {
   return resp.data;
 }
 
+export interface LayerStats {
+  count: number | null;
+  last_updated: string | null;
+  freshness_days: number | null;
+  error?: string;
+}
+
+export interface LayerStatsResponse {
+  layers: Record<string, LayerStats>;
+}
+
+export const fetchLayerStats = async (): Promise<LayerStatsResponse> => {
+  const resp = await apiClient.get("/layers/stats/");
+  return resp.data;
+};
+
 export interface GetFeatureInfoParams {
   lat: number;
   lon: number;
