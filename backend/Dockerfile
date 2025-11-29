@@ -1,16 +1,12 @@
-# backend/Dockerfile
 FROM python:3.15.0a1-slim
 
-# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gdal-bin \
@@ -22,6 +18,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && pip install -r requirements.txt --no-cache-dir \
     && mkdir -p /app/staticfiles /app/media
 
-# Copy project files
 COPY . .
-

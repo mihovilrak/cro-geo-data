@@ -481,7 +481,7 @@ class TestAddressViewSet:
     def test_retrieve_address(self, api_client: APIClient) -> None:
         """
         Test retrieving a single address.
-        
+
         Args:
             api_client (APIClient): API Client
         """

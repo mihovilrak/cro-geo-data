@@ -41,7 +41,7 @@ class Command(BaseCommand):
         allowing selective skipping of the download and GeoServer publishing phases.
 
         Args:
-            parser (argparse.ArgumentParser): The parser to 
+            parser (argparse.ArgumentParser): The parser to
                             which arguments should be added.
         """
         parser.add_argument(

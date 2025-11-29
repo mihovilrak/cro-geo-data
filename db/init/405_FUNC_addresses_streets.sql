@@ -21,7 +21,7 @@ BEGIN
     CREATE INDEX ON staging.u_streets_tmp (settlement_id, norm_name);
 
     WITH upd AS (
-      SELECT a.id AS a_id, 
+      SELECT a.id AS a_id,
         t.street_id
       FROM staging.u_addresses a
       JOIN staging.u_streets_tmp t

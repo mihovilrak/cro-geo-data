@@ -44,7 +44,7 @@ describe('MapCanvas', () => {
 
   it('should initialize map with OSM base layer when activeBaseLayer is OSM', async () => {
     render(<MapCanvas {...defaultProps} activeBaseLayer="OSM" />);
-    
+
     await waitFor(() => {
       expect(document.querySelector('div')).toBeInTheDocument();
     });
@@ -52,7 +52,7 @@ describe('MapCanvas', () => {
 
   it('should initialize map with DOF base layer when activeBaseLayer is DOF', async () => {
     render(<MapCanvas {...defaultProps} activeBaseLayer="DOF" />);
-    
+
     await waitFor(() => {
       expect(document.querySelector('div')).toBeInTheDocument();
     });
@@ -65,7 +65,7 @@ describe('MapCanvas', () => {
         selectedLayers={[defaultDescriptor]}
       />
     );
-    
+
     await waitFor(() => {
       expect(document.querySelector('div')).toBeInTheDocument();
     });
@@ -92,7 +92,7 @@ describe('MapCanvas', () => {
 
   it('should handle onFeatureClick callback', () => {
     render(<MapCanvas {...defaultProps} />);
-    
+
     expect(defaultProps.onFeatureClick).toBeDefined();
   });
 
@@ -103,9 +103,9 @@ describe('MapCanvas', () => {
 
   it('should use default GeoServer URL when env var is not set', async () => {
     delete process.env.REACT_APP_GEOSERVER_URL;
-    
+
     render(<MapCanvas {...defaultProps} />);
-    
+
     await waitFor(() => {
       expect(document.querySelector('div')).toBeInTheDocument();
     });

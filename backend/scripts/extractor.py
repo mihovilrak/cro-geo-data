@@ -115,12 +115,12 @@ def extract_au(zip_path: Path) -> None:
 
 def extract_ad(zip_path: Path) -> None:
     """
-    Extracts 'Address.gml', 'ThoroughfareName.gml', 
+    Extracts 'Address.gml', 'ThoroughfareName.gml',
     and 'PostalDescriptor.gml' from the given ZIP archive,
     parses them and loads them into PostGIS.
 
     Args:
-        zip_path (Path): Path to the ZIP archive containing 
+        zip_path (Path): Path to the ZIP archive containing
         Address.gml, ThoroughfareName.gml, and PostalDescriptor.gml files.
     """
     with extractor(zip_path) as temp_dir:

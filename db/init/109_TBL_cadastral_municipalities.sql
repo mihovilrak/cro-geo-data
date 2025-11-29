@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS dkp.cadastral_municipalities (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     geom GEOMETRY(MULTIPOLYGON, 3765) NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_cadastral_municipalities_geom 
+CREATE INDEX IF NOT EXISTS idx_cadastral_municipalities_geom
 ON dkp.cadastral_municipalities USING GIST (geom);
 

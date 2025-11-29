@@ -34,9 +34,9 @@ High-level diagram showing:
 3. **LayerSwitcher, MetadataPopup, DownloadMenu** - Feature components
 
 ### 5. Deployment
-1. **Docker Compose Services**  
-   - db, redis, backend, frontend, geoserver, nginx  
-2. **Volumes & Networking**  
-3. **Environment Variables**  
+1. **Docker Compose Services**
+   - db, redis, backend, frontend, geoserver, nginx
+2. **Volumes & Networking**
+3. **Environment Variables**
 4. **SSL/TLS** - Future enhancement
 

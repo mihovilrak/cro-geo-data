@@ -10,14 +10,14 @@ jest.mock('axios', () => {
   };
 });
 
-import apiClient, { 
-  fetchCadastralParcels, 
-  fetchCounties, 
+import apiClient, {
+  fetchCadastralParcels,
+  fetchCounties,
   fetchMunicipalities,
   fetchSettlements,
   fetchStreets,
   fetchAddresses,
-  fetchLayerCatalog 
+  fetchLayerCatalog
 } from './apiClient';
 
 describe('apiClient', () => {
@@ -34,7 +34,7 @@ describe('apiClient', () => {
       mockGet.mockResolvedValue({ data: mockData });
 
       const result = await fetchCadastralParcels();
-      
+
       expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', { params: {} });
       expect(result).toEqual(mockData);
     });
@@ -46,7 +46,7 @@ describe('apiClient', () => {
       mockGet.mockResolvedValue({ data: mockData });
 
       await fetchCadastralParcels(bbox);
-      
+
       expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', {
         params: { bbox: '100,200,300,400' },
       });
@@ -59,7 +59,7 @@ describe('apiClient', () => {
       mockGet.mockResolvedValue({ data: mockData });
 
       await fetchCadastralParcels(undefined, filters);
-      
+
       expect(mockGet).toHaveBeenCalledWith('/cadastral_parcels/', {
         params: filters,
       });
@@ -73,7 +73,7 @@ describe('apiClient', () => {
       mockGet.mockResolvedValue({ data: mockData });
 
       const result = await fetchCounties();
-      
+
       expect(mockGet).toHaveBeenCalledWith('/counties/', { params: {} });
       expect(result).toEqual(mockData);
     });
@@ -86,7 +86,7 @@ describe('apiClient', () => {
       mockGet.mockResolvedValue({ data: mockData });
 
       const result = await fetchMunicipalities();
-      
+
       expect(mockGet).toHaveBeenCalledWith('/municipalities/', { params: {} });
       expect(result).toEqual(mockData);
     });

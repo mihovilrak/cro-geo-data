@@ -6,13 +6,13 @@ const MetadataPopup: React.FC<MetadataPopupProps> = ({
   onClose,
 }) => {
   if (!properties) return null;
-  
+
   return (
     <div className="fixed top-1/4 left-1/2 transform -translate-x-1/2 bg-white p-4 rounded shadow-lg z-50 w-80 max-h-96 overflow-hidden flex flex-col">
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-semibold text-lg">Feature Metadata</h3>
-        <button 
-          className="text-gray-600 hover:text-gray-800 text-xl font-bold" 
+        <button
+          className="text-gray-600 hover:text-gray-800 text-xl font-bold"
           onClick={onClose}
           aria-label="Close"
         >

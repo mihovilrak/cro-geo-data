@@ -203,7 +203,7 @@ class TestAddressModel:
         """Test Address model metadata."""
         assert Address._meta.verbose_name == "Address"
         assert Address._meta.verbose_name_plural == "Addresses"
-        assert Address._meta.ordering == ("id",)    
+        assert Address._meta.ordering == ("id",)
 
 @pytest.mark.django_db
 class TestCadastralMunicipalityModel:

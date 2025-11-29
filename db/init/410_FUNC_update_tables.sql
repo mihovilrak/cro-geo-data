@@ -75,13 +75,13 @@ BEGIN
 
     CREATE INDEX idx_counties_national_code
     ON rpj.counties (national_code);
-        
+
     CREATE INDEX idx_counties_geom
     ON rpj.counties USING GIST (geom);
 
     ALTER TABLE rpj.counties
     ADD CONSTRAINT pk_counties PRIMARY KEY (id);
-        
+
     ALTER TABLE rpj.counties
     ADD CONSTRAINT fk_counties_country
     FOREIGN KEY (national_code)
@@ -111,16 +111,16 @@ BEGIN
 
     CREATE INDEX idx_municipalities_national_code
     ON rpj.municipalities (national_code);
-        
+
     CREATE INDEX idx_municipalities_county_code
     ON rpj.municipalities (county_code);
-        
+
     CREATE INDEX idx_municipalities_geom
     ON rpj.municipalities USING GIST (geom);
 
     ALTER TABLE rpj.municipalities
     ADD CONSTRAINT pk_municipalities PRIMARY KEY (id);
-        
+
     ALTER TABLE rpj.municipalities
     ADD CONSTRAINT fk_municipalities_counties
     FOREIGN KEY (county_code)
@@ -150,13 +150,13 @@ BEGIN
 
     CREATE INDEX idx_settlements_national_code
     ON rpj.settlements (national_code);
-        
+
     CREATE INDEX idx_settlements_municipality_code
     ON rpj.settlements (municipality_code);
-        
+
     CREATE INDEX idx_settlements_name
     ON rpj.settlements (name);
-        
+
     CREATE INDEX idx_settlements_geom
     ON rpj.settlements USING GIST (geom);
 
@@ -229,7 +229,7 @@ BEGIN
 
     CREATE INDEX idx_addresses_street_id
     ON rpj.addresses (street_id);
-        
+
     CREATE INDEX idx_addresses_geom
     ON rpj.addresses USING GIST (geom);
 
@@ -237,7 +237,7 @@ BEGIN
     ADD CONSTRAINT pk_addresses PRIMARY KEY (id);
 
     ALTER TABLE rpj.addresses
-    ADD CONSTRAINT fk_addresses_streets 
+    ADD CONSTRAINT fk_addresses_streets
     FOREIGN KEY (street_id)
     REFERENCES rpj.streets (id);
 
@@ -269,13 +269,13 @@ BEGIN
 
     CREATE INDEX idx_cadastral_municipalities_national_code
     ON dkp.cadastral_municipalities (national_code);
-        
-    CREATE INDEX idx_cadastral_municipalities_geom 
+
+    CREATE INDEX idx_cadastral_municipalities_geom
     ON dkp.cadastral_municipalities USING GIST (geom);
-        
-    ALTER TABLE dkp.cadastral_municipalities 
+
+    ALTER TABLE dkp.cadastral_municipalities
     ADD CONSTRAINT pk_cadastral_municipalities PRIMARY KEY (id);
-        
+
     VACUUM ANALYZE dkp.cadastral_municipalities;
 
     CREATE TABLE IF NOT EXISTS dkp.cadastral_parcels_new
@@ -304,7 +304,7 @@ BEGIN
 
     CREATE INDEX idx_cadastral_parcels_parcel_code
     ON dkp.cadastral_parcels (parcel_code);
-        
+
     CREATE INDEX idx_cadastral_parcels_geom
     ON dkp.cadastral_parcels USING GIST (geom);
 
@@ -317,7 +317,7 @@ BEGIN
     REFERENCES dkp.cadastral_municipalities (national_code);
 
     VACUUM ANALYZE dkp.cadastral_parcels;
-        
+
     CREATE TABLE IF NOT EXISTS dkp.buildings_new
     (LIKE dkp.buildings INCLUDING DEFAULTS);
 

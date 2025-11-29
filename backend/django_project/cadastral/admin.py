@@ -97,7 +97,7 @@ class StreetFeatureAdmin(admin.ModelAdmin):
         "name",
         "unique_identifier",
         "settlement_code",
-        "settlement_name", 
+        "settlement_name",
         "municipality_name",
         "county_name",
         "geom"

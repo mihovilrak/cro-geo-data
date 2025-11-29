@@ -25,19 +25,19 @@ describe('MetadataPopup', () => {
     const { container } = render(
       <MetadataPopup properties={null} onClose={jest.fn()} />
     );
-    
+
     expect(container.firstChild).toBeNull();
   });
 
   it('should render metadata popup with title', () => {
     render(<MetadataPopup {...defaultProps} />);
-    
+
     expect(screen.getByText(/Feature Metadata/i)).toBeInTheDocument();
   });
 
   it('should render all property key-value pairs', () => {
     render(<MetadataPopup {...defaultProps} />);
-    
+
     expect(screen.getByText(/ogc_fid:/i)).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText(/parcel_id:/i)).toBeInTheDocument();
@@ -58,12 +58,12 @@ describe('MetadataPopup', () => {
   it('should call onClose when close button is clicked', async () => {
     const user = userEvent.setup();
     const onClose = jest.fn();
-    
+
     render(<MetadataPopup {...defaultProps} onClose={onClose} />);
-    
+
     const closeButton = screen.getByRole('button', { name: /close/i });
     await user.click(closeButton);
-    
+
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -74,7 +74,7 @@ describe('MetadataPopup', () => {
         onClose={jest.fn()}
       />
     );
-    
+
     expect(screen.getByText(/Feature Metadata/i)).toBeInTheDocument();
     expect(screen.queryByText(/:/)).not.toBeInTheDocument();
   });
@@ -85,14 +85,14 @@ describe('MetadataPopup', () => {
       coordinates: [100, 200],
       nested: { key: 'value' },
     };
-    
+
     render(
       <MetadataPopup
         properties={complexProperties}
         onClose={jest.fn()}
       />
     );
-    
+
     expect(screen.getByText(/name:/i)).toBeInTheDocument();
     expect(screen.getByText('Test')).toBeInTheDocument();
   });

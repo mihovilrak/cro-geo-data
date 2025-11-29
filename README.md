@@ -6,19 +6,19 @@ This repository contains a **full-stack** Web GIS application for **Croatia's ca
 
 ## 🧱 Tech Stack
 
-- **Backend**: Python 3, Django 4, GeoDjango, Django REST Framework, Django Filters, Celery (optional)  
-- **Database**: PostgreSQL 15 + PostGIS 3.3  
-- **GeoServer**: OSGEO GeoServer 2.23.x  
-- **Frontend**: React 18 + TypeScript, OpenLayers 6, Tailwind CSS  
-- **Containerization**: Docker, Docker Compose, nginx (reverse proxy)  
-- **CI/CD & Version Control**: Git  
+- **Backend**: Python 3, Django 4, GeoDjango, Django REST Framework, Django Filters, Celery (optional)
+- **Database**: PostgreSQL 15 + PostGIS 3.3
+- **GeoServer**: OSGEO GeoServer 2.23.x
+- **Frontend**: React 18 + TypeScript, OpenLayers 6, Tailwind CSS
+- **Containerization**: Docker, Docker Compose, nginx (reverse proxy)
+- **CI/CD & Version Control**: Git
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Docker 20.10+ & Docker Compose v2+  
-- (Optional) Local Python 3.11 + Node 18 installations for development without Docker  
+- Docker 20.10+ & Docker Compose v2+
+- (Optional) Local Python 3.11 + Node 18 installations for development without Docker
 
 ### Quick Start
 

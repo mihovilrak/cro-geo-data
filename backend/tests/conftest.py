@@ -34,16 +34,16 @@ pytest_plugins = ["pytest_django"]
 def _find_sql_init_directory() -> Path:
     """
     Find the SQL init directory.
-    
+
     Tries multiple locations:
     1. DB_INIT_DIR environment variable (for CI/CD or custom setups)
     2. /db/init (Docker mounted volume)
     3. Relative to backend directory: ../db/init (local development)
     4. Relative to repo root: db/init (if running from repo root)
-    
+
     Returns:
         Path to the SQL init directory
-        
+
     Raises:
         FileNotFoundError: If the directory cannot be found
     """
@@ -65,7 +65,7 @@ def _find_sql_init_directory() -> Path:
     cwd_init_dir = Path.cwd() / "db" / "init"
     if cwd_init_dir.exists() and cwd_init_dir.is_dir():
         return cwd_init_dir
-    
+
     raise FileNotFoundError(
         f"Could not find SQL init directory. Tried:\n"
         f"  - DB_INIT_DIR env var: {os.getenv('DB_INIT_DIR', 'not set')}\n"
@@ -79,11 +79,11 @@ def _find_sql_init_directory() -> Path:
 def _execute_sql_file(cursor: Cursor, sql_file: Path) -> None:
     """
     Execute a SQL file using the database cursor.
-    
+
     Handles files with multiple statements by splitting on semicolons
     and executing each statement separately. This is necessary because
     psycopg2's execute() can only handle one statement at a time.
-    
+
     Args:
         cursor: Database cursor
         sql_file: Path to SQL file
@@ -91,7 +91,7 @@ def _execute_sql_file(cursor: Cursor, sql_file: Path) -> None:
     try:
         with open(sql_file, "r", encoding="utf-8") as f:
             sql_content = f.read().strip()
-        
+
         if not sql_content:
             return
 
@@ -122,22 +122,22 @@ def _execute_sql_file(cursor: Cursor, sql_file: Path) -> None:
 def setup_test_database(django_db_setup: Any, django_db_blocker: Any) -> None:
     """
     Automatically set up the test database schema by executing SQL init scripts.
-    
+
     This fixture runs once per test session and creates all necessary
     schemas and tables for unmanaged models. It reads SQL files from the
     db/init directory, so the SQL scripts remain the source of truth.
-    
+
     The fixture executes SQL files in this order:
     - Extensions (001_EXT_*.sql)
     - Schemas (002-006_SCHEMA_*.sql)
     - Tables (101-111_TBL_*.sql)
     - Views (301-313_VIEW_*.sql) - in dependency order
     - Materialized views (311_MVIEW_*.sql) - after regular views
-    
+
     It skips:
     - Unmanaged tables (201-210_UTBL_*.sql) - not needed for basic tests
     - Functions (401-412_FUNC_*.sql) - may depend on data
-    
+
     Environment variables:
         DB_INIT_DIR: Optional path to SQL init directory (for CI/CD)
     """
@@ -147,10 +147,10 @@ def setup_test_database(django_db_setup: Any, django_db_blocker: Any) -> None:
         except FileNotFoundError as e:
             pytest.skip(f"Skipping database setup: {e}")
             return
-        
+
         with connection.cursor() as cursor:
             sql_files = sorted(init_dir.glob("*.sql"))
-            
+
             if not sql_files:
                 pytest.skip(f"No SQL files found in {init_dir}")
                 return

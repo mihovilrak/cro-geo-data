@@ -1,7 +1,7 @@
 function MockTileLayer(config) {
   this._properties = {};
   this._source = config ? config.source : null;
-  
+
   this.set = jest.fn((key, value) => {
     this._properties[key] = value;
     return this;

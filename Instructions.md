@@ -1,13 +1,13 @@
 These instructions guide an AI Agent (or Senior Python/Web/GIS Developer) through building a full-stack Web GIS application that:
 
-1. **Scrapes cadastral and administrative data for Croatia** from the Državna Geodetska Uprava (DGU) ATOM service on a **weekly** basis  
-2. **Stores** scraped data into a **PostgreSQL + PostGIS** database  
-3. **Publishes** spatial data via a **GeoDjango** backend, **GeoServer**, and a **React (TypeScript) + OpenLayers** frontend  
-4. Enables users to **switch layers**, view **metadata**, perform **GetFeatureInfo** queries, and **download** data in multiple formats (Shapefile, GeoPackage, GeoJSON, KML, DXF, etc.)  
-5. Is fully **containerized** with **Docker** (including **nginx** as reverse proxy)  
-6. Maintains a **Git** repository with a **`.gitignore`**, **README.md**, and **comprehensive documentation**  
-7. Adheres to **best coding practices** (linting, formatting, testing)  
-8. Uses **OSM** and the official **Digital Orthophoto of Croatia (DOF)** as background layers  
+1. **Scrapes cadastral and administrative data for Croatia** from the Državna Geodetska Uprava (DGU) ATOM service on a **weekly** basis
+2. **Stores** scraped data into a **PostgreSQL + PostGIS** database
+3. **Publishes** spatial data via a **GeoDjango** backend, **GeoServer**, and a **React (TypeScript) + OpenLayers** frontend
+4. Enables users to **switch layers**, view **metadata**, perform **GetFeatureInfo** queries, and **download** data in multiple formats (Shapefile, GeoPackage, GeoJSON, KML, DXF, etc.)
+5. Is fully **containerized** with **Docker** (including **nginx** as reverse proxy)
+6. Maintains a **Git** repository with a **`.gitignore`**, **README.md**, and **comprehensive documentation**
+7. Adheres to **best coding practices** (linting, formatting, testing)
+8. Uses **OSM** and the official **Digital Orthophoto of Croatia (DOF)** as background layers
 
 ---
 
@@ -87,10 +87,10 @@ croatia-gis/                    # Repository root
 
 ### 2.1. Overview
 
-- **Objective**: Every week, fetch the latest cadastral and administrative datasets from DGU’s ATOM feeds, convert them to PostGIS-compatible format, and load them into our database.  
-- **Data Format**:  
-  - Most ATOM feeds link to **GML** or **ZIP** (containing Shapefiles).  
-  - Filenames often include dataset type (e.g., “katastar_gml_YYYYMMDD.zip” or “administrativne_granice_gml_YYYYMMDD.gml”).  
+- **Objective**: Every week, fetch the latest cadastral and administrative datasets from DGU’s ATOM feeds, convert them to PostGIS-compatible format, and load them into our database.
+- **Data Format**:
+  - Most ATOM feeds link to **GML** or **ZIP** (containing Shapefiles).
+  - Filenames often include dataset type (e.g., “katastar_gml_YYYYMMDD.zip” or “administrativne_granice_gml_YYYYMMDD.gml”).
 
 ### 2.2. Required Python Dependencies
 
@@ -115,16 +115,16 @@ python-dotenv>=1.0  # For `.env` support
 
 Place in `backend/scripts/fetch_atom_data.py`. This script:
 
-1. Reads ATOM feed URLs (from config or `.env`).  
-2. Sends HTTP GET to each ATOM URL.  
-3. Parses XML to extract `<entry>` items:  
-   - `<title>`: Dataset name/date  
-   - `<link rel="enclosure">`: URL to GML/ZIP  
-   - `<updated>`: Timestamp  
-4. Checks local **ETag/Last-Modified** or a local “history” table to avoid re-downloading unchanged files.  
-5. Downloads new files to a staging folder (e.g., `backend/data/weekly/`).  
-6. Unpacks ZIP if needed.  
-7. Delegates to `parse_and_load.py` for conversion + loading.  
+1. Reads ATOM feed URLs (from config or `.env`).
+2. Sends HTTP GET to each ATOM URL.
+3. Parses XML to extract `<entry>` items:
+   - `<title>`: Dataset name/date
+   - `<link rel="enclosure">`: URL to GML/ZIP
+   - `<updated>`: Timestamp
+4. Checks local **ETag/Last-Modified** or a local “history” table to avoid re-downloading unchanged files.
+5. Downloads new files to a staging folder (e.g., `backend/data/weekly/`).
+6. Unpacks ZIP if needed.
+7. Delegates to `parse_and_load.py` for conversion + loading.
 
 ```python
 # backend/scripts/fetch_atom_data.py
@@ -306,17 +306,17 @@ if __name__ == "__main__":
     main()
 ```
 
-> **Important**  
-> - Ensure the Docker container running this script has access to the `gdal-bin` binary.  
-> - Adapt `layer_name` logic to match your naming conventions (e.g., include date or dataset type).  
+> **Important**
+> - Ensure the Docker container running this script has access to the `gdal-bin` binary.
+> - Adapt `layer_name` logic to match your naming conventions (e.g., include date or dataset type).
 
 ### 2.5. Scheduling Weekly Execution
 
 #### Option A: Linux `cron` (Simpler)
 
-1. SSH into Docker host (or orchestrator VM).  
-2. Edit crontab (`crontab -e`) for the user that owns `.env` & project files.  
-3. Add entry (runs every Sunday at 2 AM):  
+1. SSH into Docker host (or orchestrator VM).
+2. Edit crontab (`crontab -e`) for the user that owns `.env` & project files.
+3. Add entry (runs every Sunday at 2 AM):
    ```cron
    0 2 * * 0 cd /path/to/croatia-gis/backend/scripts && /usr/bin/python3 fetch_atom_data.py >> /path/to/croatia-gis/backend/logs/scrape.log 2>&1
    ```
@@ -394,7 +394,7 @@ volumes:
   postgres_data:
 ```
 
-> The `db/init.sql` script will run on container startup.  
+> The `db/init.sql` script will run on container startup.
 
 ### 3.2. `db/init.sql`
 
@@ -410,7 +410,7 @@ CREATE SCHEMA IF NOT EXISTS cadastral AUTHORIZATION ${DB_USER};
 -- GRANT USAGE ON SCHEMA public, cadastral TO gis_reader;
 ```
 
-> **Environment Variable Substitution**: Docker initializes `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` automatically, so you can `\c` into the DB from other services.  
+> **Environment Variable Substitution**: Docker initializes `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` automatically, so you can `\c` into the DB from other services.
 
 ---
 
@@ -564,8 +564,8 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000
 
 Each ATOM dataset typically yields one or more layers. For demonstration, assume two core layers:
 
-- `CadastralParcel`  
-- `AdministrativeBoundary`  
+- `CadastralParcel`
+- `AdministrativeBoundary`
 
 ```python
 # cadastral/models.py
@@ -618,8 +618,8 @@ class AdministrativeBoundary(models.Model):
         return f"{self.name} ({self.admin_type})"
 ```
 
-> **CRS Note**:  
-> - Croatia primarily uses **EPSG:3765** (D48 / Croatia). If the data is in **EPSG:4326**, convert during ingest. Adjust SRID accordingly.  
+> **CRS Note**:
+> - Croatia primarily uses **EPSG:3765** (D48 / Croatia). If the data is in **EPSG:4326**, convert during ingest. Adjust SRID accordingly.
 
 ### 4.5. Serializers (in `cadastral/serializers.py`)
 
@@ -652,8 +652,8 @@ class AdministrativeBoundarySerializer(GeoFeatureModelSerializer):
         )
 ```
 
-> **Why GeoFeatureModelSerializer?**  
-> - Automatically formats responses as **GeoJSON FeatureCollections**.  
+> **Why GeoFeatureModelSerializer?**
+> - Automatically formats responses as **GeoJSON FeatureCollections**.
 
 ### 4.6. Views & URLs (in `cadastral/views.py` and `cadastral/urls.py`)
 
@@ -723,8 +723,8 @@ urlpatterns = [
 ]
 ```
 
-> **Tip**:  
-> - To implement **GetFeatureInfo** style behavior (point queries), you can add a custom DRF view that accepts `lat/lon` and returns features at that point within a tolerance. For example, use `geom__intersects=Point` filter. Alternatively, rely on **GeoServer** for GetFeatureInfo.  
+> **Tip**:
+> - To implement **GetFeatureInfo** style behavior (point queries), you can add a custom DRF view that accepts `lat/lon` and returns features at that point within a tolerance. For example, use `geom__intersects=Point` filter. Alternatively, rely on **GeoServer** for GetFeatureInfo.
 
 ---
 
@@ -733,9 +733,9 @@ urlpatterns = [
 ### 5.1. Why GeoServer?
 
 GeoServer provides:
-- **WMS** and **WFS** endpoints for tiled rendering and feature queries  
-- Built-in **GetFeatureInfo** support  
-- **Download** in multiple formats out-of-the-box (Shapefile, GeoJSON, KML, DXF, GPKG, etc.) via WFS “outputFormat” parameter  
+- **WMS** and **WFS** endpoints for tiled rendering and feature queries
+- Built-in **GetFeatureInfo** support
+- **Download** in multiple formats out-of-the-box (Shapefile, GeoJSON, KML, DXF, GPKG, etc.) via WFS “outputFormat” parameter
 
 ### 5.2. Docker Compose for GeoServer
 
@@ -777,12 +777,12 @@ geoserver/
 
 Create a Python script `backend/django_project/geoserver_integration/publish_layers.py` to:
 
-1. Connect to GeoServer’s REST endpoint (`http://geoserver:8080/geoserver/rest`).  
-2. Create a **Workspace** named `croatia` (if not exists).  
-3. Create a **Store** linking to the PostGIS database.  
+1. Connect to GeoServer’s REST endpoint (`http://geoserver:8080/geoserver/rest`).
+2. Create a **Workspace** named `croatia` (if not exists).
+3. Create a **Store** linking to the PostGIS database.
 4. Publish each table (layer) from PostGIS into GeoServer:
 
-   - Use `POST /rest/workspaces/croatia/datastores/…/featuretypes` requests with a minimal XML body.  
+   - Use `POST /rest/workspaces/croatia/datastores/…/featuretypes` requests with a minimal XML body.
    - Create default styles (optional): e.g., `polygon` style with no fill or transparent fill.
 
 ```python
@@ -877,7 +877,7 @@ def main():
     cur = conn.cursor()
     schema = "public"  # or 'cadastral'
     cur.execute("""
-        SELECT table_name FROM information_schema.tables 
+        SELECT table_name FROM information_schema.tables
         WHERE table_schema = %s AND table_type = 'BASE TABLE';
     """, (schema,))
     tables = [row[0] for row in cur.fetchall()]
@@ -889,20 +889,20 @@ if __name__ == "__main__":
     main()
 ```
 
-> **Run this script** once the PostGIS DB & GeoServer are up. You can integrate it into your **Docker entrypoint** or run manually via `docker exec`.  
+> **Run this script** once the PostGIS DB & GeoServer are up. You can integrate it into your **Docker entrypoint** or run manually via `docker exec`.
 
 ### 5.5. GeoServer REST vs. Manual UI
 
-- **REST** is recommended for reproducibility and automation.  
-- If manually using the GeoServer UI:  
-  1. Log in at `http://<host>:8080/geoserver` (default credentials `admin/geoserver`).  
-  2. Create a workspace named `croatia`.  
-  3. Create a PostGIS store, filling in connection parameters.  
-  4. “Publish” each table as a layer.  
-  5. For each layer, configure:  
-     - **Coordinate Reference System**: `EPSG:3765`  
-     - **Bounding boxes**: Recalculate from data  
-     - **Default Style**: Assign a style (e.g., `polygon`). You can upload an SLD or use a built-in style.  
+- **REST** is recommended for reproducibility and automation.
+- If manually using the GeoServer UI:
+  1. Log in at `http://<host>:8080/geoserver` (default credentials `admin/geoserver`).
+  2. Create a workspace named `croatia`.
+  3. Create a PostGIS store, filling in connection parameters.
+  4. “Publish” each table as a layer.
+  5. For each layer, configure:
+     - **Coordinate Reference System**: `EPSG:3765`
+     - **Bounding boxes**: Recalculate from data
+     - **Default Style**: Assign a style (e.g., `polygon`). You can upload an SLD or use a built-in style.
 
 ---
 
@@ -1109,11 +1109,11 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
 export default MapCanvas;
 ```
 
-> **Explanation**:  
-> - **`osmLayer`**: OpenStreetMap via OSM source (XYZ) as default background.  
-> - **`dofLayer`**: Croatian orthophoto WMS from GeoServer. Toggle visibility via UI.  
-> - **`wmsLayers`**: vector layers published in GeoServer (e.g., `cadastral_cadastralparcel`, `cadastral_administrativeboundary`).  
-> - **GetFeatureInfo**: On map click, build WMS GetFeatureInfo URL for the top-most layer, fetch attributes, and pass to callback.  
+> **Explanation**:
+> - **`osmLayer`**: OpenStreetMap via OSM source (XYZ) as default background.
+> - **`dofLayer`**: Croatian orthophoto WMS from GeoServer. Toggle visibility via UI.
+> - **`wmsLayers`**: vector layers published in GeoServer (e.g., `cadastral_cadastralparcel`, `cadastral_administrativeboundary`).
+> - **GetFeatureInfo**: On map click, build WMS GetFeatureInfo URL for the top-most layer, fetch attributes, and pass to callback.
 
 ### 6.5. LayerSwitcher Component
 
@@ -1179,10 +1179,10 @@ const LayerSwitcher: React.FC<LayerSwitcherProps> = ({
 export default LayerSwitcher;
 ```
 
-> **Props**:  
-> - `availableLayers`: Array of `{ id: string; title: string }` (e.g., `[{ id: "cadastral_cadastralparcel", title: "Parcels" }, {...}]`).  
-> - `selectedLayers`: Controlled checkbox state.  
-> - `toggleLayer`: Callback when user checks/unchecks a layer.  
+> **Props**:
+> - `availableLayers`: Array of `{ id: string; title: string }` (e.g., `[{ id: "cadastral_cadastralparcel", title: "Parcels" }, {...}]`).
+> - `selectedLayers`: Controlled checkbox state.
+> - `toggleLayer`: Callback when user checks/unchecks a layer.
 
 ### 6.6. MetadataPopup & DownloadMenu Components
 
@@ -1296,9 +1296,9 @@ const DownloadMenu: React.FC<DownloadMenuProps> = ({ activeLayer, bbox }) => {
 export default DownloadMenu;
 ```
 
-> **Notes**:  
-> - If you prefer to generate downloads via Django (e.g., filter by attribute), build a DRF view that streams a file.  
-> - WFS “shape-zip” automatically packages Shapefile components into a ZIP.  
+> **Notes**:
+> - If you prefer to generate downloads via Django (e.g., filter by attribute), build a DRF view that streams a file.
+> - WFS “shape-zip” automatically packages Shapefile components into a ZIP.
 
 ### 6.7. Main App Logic (`App.tsx`)
 
@@ -1395,11 +1395,11 @@ const App: React.FC = () => {
 export default App;
 ```
 
-> **Key Points**:  
-> - **`availableLayers`**: Ideally fetched from GeoServer’s REST (list all layers in workspace `croatia`). You can create a `/api/layers/` endpoint in Django that proxies to GeoServer.  
-> - **`toggleLayer`** and **`toggleBase`** manage visible layers.  
-> - **`DownloadMenu`** only appears for the “currently active” vector layer.  
-> - **`bbox`**: You can listen to `map.on("moveend", ...)` to update bounding box state.  
+> **Key Points**:
+> - **`availableLayers`**: Ideally fetched from GeoServer’s REST (list all layers in workspace `croatia`). You can create a `/api/layers/` endpoint in Django that proxies to GeoServer.
+> - **`toggleLayer`** and **`toggleBase`** manage visible layers.
+> - **`DownloadMenu`** only appears for the “currently active” vector layer.
+> - **`bbox`**: You can listen to `map.on("moveend", ...)` to update bounding box state.
 
 ### 6.8. TypeScript Types (`services/types.ts`)
 
@@ -1468,8 +1468,8 @@ export async function fetchAdminBoundaries() {
 }
 ```
 
-> **Tip**:  
-> - Use `fetchAdminBoundaries()` on page load to build **LayerSwitcher** items dynamically.  
+> **Tip**:
+> - Use `fetchAdminBoundaries()` on page load to build **LayerSwitcher** items dynamically.
 
 ---
 
@@ -1566,13 +1566,13 @@ volumes:
   postgres_data:
 ```
 
-> **Service Details**:  
-> - **db**: PostGIS database  
-> - **redis**: Celery broker/result backend (optional)  
-> - **backend**: Django+GeoDjango served by **Gunicorn**  
-> - **frontend**: React build served by `serve` (or you can let Nginx serve static files directly)  
-> - **geoserver**: OSGEO GeoServer container  
-> - **nginx**: Reverse proxy & HTTPS termination (optional)  
+> **Service Details**:
+> - **db**: PostGIS database
+> - **redis**: Celery broker/result backend (optional)
+> - **backend**: Django+GeoDjango served by **Gunicorn**
+> - **frontend**: React build served by `serve` (or you can let Nginx serve static files directly)
+> - **geoserver**: OSGEO GeoServer container
+> - **nginx**: Reverse proxy & HTTPS termination (optional)
 
 ### 7.2. Dockerfiles
 
@@ -1612,7 +1612,7 @@ COPY . .
 RUN mkdir -p /app/staticfiles /app/media
 ```
 
-> **Note**: Adjust GDAL headers includes if needed (e.g., set `C_INCLUDE_PATH`).  
+> **Note**: Adjust GDAL headers includes if needed (e.g., set `C_INCLUDE_PATH`).
 
 #### 7.2.2. `frontend/Dockerfile`
 
@@ -1680,7 +1680,7 @@ server {
 }
 ```
 
-> **HTTPS**: To enable HTTPS, mount your certs and add an SSL server block with `ssl_certificate` and `ssl_certificate_key`.  
+> **HTTPS**: To enable HTTPS, mount your certs and add an SSL server block with `ssl_certificate` and `ssl_certificate_key`.
 
 ---
 
@@ -1725,7 +1725,7 @@ docker/postgres_data/
 *.swp
 ```
 
-> **Tip**: If you want to keep certain GeoServer configs under version control, selectively add them under `geoserver/data_dir/workspaces/croatia/styles/`, etc.  
+> **Tip**: If you want to keep certain GeoServer configs under version control, selectively add them under `geoserver/data_dir/workspaces/croatia/styles/`, etc.
 
 ---
 
@@ -1738,21 +1738,21 @@ Create `README.md` at repo root:
 
 This repository contains a **full-stack** Web GIS application for **Croatia’s cadastral and administrative** spatial data. It automates:
 
-1. Weekly scraping from Državna Geodetska Uprava ATOM feeds  
-2. Importing into a **PostgreSQL + PostGIS** database  
-3. Publishing via **GeoDjango**, **GeoServer**, and **React + OpenLayers**  
-4. Serving to end-users with **layer switching**, **GetFeatureInfo**, **metadata**, and **download** in multiple formats  
+1. Weekly scraping from Državna Geodetska Uprava ATOM feeds
+2. Importing into a **PostgreSQL + PostGIS** database
+3. Publishing via **GeoDjango**, **GeoServer**, and **React + OpenLayers**
+4. Serving to end-users with **layer switching**, **GetFeatureInfo**, **metadata**, and **download** in multiple formats
 
 ---
 
 ## 🧱 Tech Stack
 
-- **Backend**: Python 3, Django 4, GeoDjango, Django REST Framework, Django Filters, Celery (optional)  
-- **Database**: PostgreSQL 15 + PostGIS 3.3  
-- **GeoServer**: OSGEO GeoServer 2.23.x  
-- **Frontend**: React 18 + TypeScript, OpenLayers 6, Tailwind CSS  
-- **Containerization**: Docker, Docker Compose, nginx (reverse proxy)  
-- **CI/CD & Version Control**: Git  
+- **Backend**: Python 3, Django 4, GeoDjango, Django REST Framework, Django Filters, Celery (optional)
+- **Database**: PostgreSQL 15 + PostGIS 3.3
+- **GeoServer**: OSGEO GeoServer 2.23.x
+- **Frontend**: React 18 + TypeScript, OpenLayers 6, Tailwind CSS
+- **Containerization**: Docker, Docker Compose, nginx (reverse proxy)
+- **CI/CD & Version Control**: Git
 
 ---
 
@@ -1760,8 +1760,8 @@ This repository contains a **full-stack** Web GIS application for **Croatia’s 
 
 ### Prerequisites
 
-- Docker 20.10+ & Docker Compose v2+  
-- (Optional) Local Python 3.11 + Node 18 installations for development without Docker  
+- Docker 20.10+ & Docker Compose v2+
+- (Optional) Local Python 3.11 + Node 18 installations for development without Docker
 
 ### Clone Repo
 
@@ -1798,17 +1798,17 @@ cd docker
 docker-compose up --build -d
 ```
 
-- **PostGIS** initializes and runs migrations (via Django entrypoint).  
-- **GeoServer** initializes with empty data dir—you may run `publish_layers.py` to auto-publish tables.  
-- **React** app builds and is served on port **3000**.  
-- **nginx** listens on port **80** (8000+ for internal).  
+- **PostGIS** initializes and runs migrations (via Django entrypoint).
+- **GeoServer** initializes with empty data dir—you may run `publish_layers.py` to auto-publish tables.
+- **React** app builds and is served on port **3000**.
+- **nginx** listens on port **80** (8000+ for internal).
 
 ### Access URLs
 
-- **Frontend**: http://localhost  
-- **Backend API**: http://localhost/api/  
-- **GeoServer**: http://localhost/geoserver/ (UI + OGC endpoints)  
-- **Admin**: http://localhost/admin/ (Django admin—create superuser via `docker exec -it croatia_gis_backend python manage.py createsuperuser`)  
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost/api/
+- **GeoServer**: http://localhost/geoserver/ (UI + OGC endpoints)
+- **Admin**: http://localhost/admin/ (Django admin—create superuser via `docker exec -it croatia_gis_backend python manage.py createsuperuser`)
 
 ---
 
@@ -1816,46 +1816,46 @@ docker-compose up --build -d
 
 See the `docs/` folder:
 
-- **architecture.md**: System architecture diagrams & component descriptions  
-- **api.md**: REST API specs (endpoints, query parameters, response schemas)  
-- **geoserver.md**: GeoServer configuration & layer publication guide  
-- **data_model.md**: PostGIS schema, spatial indexes, ERD  
-- **scraping.md**: ATOM feed details, parsing logic, error handling, retry strategy  
+- **architecture.md**: System architecture diagrams & component descriptions
+- **api.md**: REST API specs (endpoints, query parameters, response schemas)
+- **geoserver.md**: GeoServer configuration & layer publication guide
+- **data_model.md**: PostGIS schema, spatial indexes, ERD
+- **scraping.md**: ATOM feed details, parsing logic, error handling, retry strategy
 
 ---
 
 ## 🛠️ Development & Best Practices
 
-1. **Coding Style**  
-   - **Python**:  
-     - Follow **PEP 8**.  
-     - Use **Black** for formatting: `black .`  
-     - Lint with **flake8**: `flake8 .`  
-   - **TypeScript**:  
-     - Use **ESLint** + **Prettier**.  
-     - Run `npm run lint` before commit.  
+1. **Coding Style**
+   - **Python**:
+     - Follow **PEP 8**.
+     - Use **Black** for formatting: `black .`
+     - Lint with **flake8**: `flake8 .`
+   - **TypeScript**:
+     - Use **ESLint** + **Prettier**.
+     - Run `npm run lint` before commit.
 
-2. **Testing**  
-   - **Backend**:  
-     - Use **pytest** + **pytest-django**.  
-     - Write tests for: models (geometry validity), serializers, views (status codes, GeoJSON format).  
-   - **Frontend**:  
-     - Use **React Testing Library** + **Jest**.  
-     - Test: Map rendering, layer toggling, GetFeatureInfo behavior (mock WMS responses).  
+2. **Testing**
+   - **Backend**:
+     - Use **pytest** + **pytest-django**.
+     - Write tests for: models (geometry validity), serializers, views (status codes, GeoJSON format).
+   - **Frontend**:
+     - Use **React Testing Library** + **Jest**.
+     - Test: Map rendering, layer toggling, GetFeatureInfo behavior (mock WMS responses).
 
-3. **Continuous Integration**  
-   - Integrate **GitHub Actions** (or GitLab CI) to run lint, formatting, and tests on each PR.  
+3. **Continuous Integration**
+   - Integrate **GitHub Actions** (or GitLab CI) to run lint, formatting, and tests on each PR.
 
-4. **Security**  
-   - Store secrets in environment variables (`.env` files not committed).  
-   - Use `HTTPS` in production; configure **nginx** with valid TLS certs (Let’s Encrypt).  
-   - Restrict CORS to trusted domains.  
-   - Regularly update Docker images to patch vulnerabilities.  
+4. **Security**
+   - Store secrets in environment variables (`.env` files not committed).
+   - Use `HTTPS` in production; configure **nginx** with valid TLS certs (Let’s Encrypt).
+   - Restrict CORS to trusted domains.
+   - Regularly update Docker images to patch vulnerabilities.
 
-5. **Logging & Monitoring**  
-   - **Django**: Configure `LOGGING` in `settings.py` to output to files/STDOUT.  
-   - **GeoServer**: Tail logs under `geoserver/data_dir/logs/`.  
-   - **Docker**: Use `docker logs` and consider integrating with ELK stack for production.  
+5. **Logging & Monitoring**
+   - **Django**: Configure `LOGGING` in `settings.py` to output to files/STDOUT.
+   - **GeoServer**: Tail logs under `geoserver/data_dir/logs/`.
+   - **Docker**: Use `docker logs` and consider integrating with ELK stack for production.
 
 ---
 
@@ -1878,32 +1878,32 @@ High-level diagram showing:
 ## Components
 
 ### 1. Data Ingestion
-1. **fetch_atom_data.py**  
-2. **parse_and_load.py**  
-3. **PostGIS**  
+1. **fetch_atom_data.py**
+2. **parse_and_load.py**
+3. **PostGIS**
 
 ### 2. Backend
-1. **Django + GeoDjango**  
-2. **Models**  
-3. **DRF ViewSets & Serializers**  
-4. **Celery (Tasks)**  
+1. **Django + GeoDjango**
+2. **Models**
+3. **DRF ViewSets & Serializers**
+4. **Celery (Tasks)**
 
 ### 3. GeoServer
-1. **Workspace**: croatia  
-2. **Datastore**: PostGIS connection parameters  
-3. **Layers**: cadastral_cadastralparcel, cadastral_administrativeboundary, dof_ortho  
+1. **Workspace**: croatia
+2. **Datastore**: PostGIS connection parameters
+3. **Layers**: cadastral_cadastralparcel, cadastral_administrativeboundary, dof_ortho
 
 ### 4. Frontend
-1. **React Components**  
-2. **OpenLayers Map**  
-3. **LayerSwitcher, MetadataPopup, DownloadMenu**  
+1. **React Components**
+2. **OpenLayers Map**
+3. **LayerSwitcher, MetadataPopup, DownloadMenu**
 
 ### 5. Deployment
-1. **Docker Compose Services**  
-   - db, redis, backend, frontend, geoserver, nginx  
-2. **Volumes & Networking**  
-3. **Environment Variables**  
-4. **SSL/TLS**  
+1. **Docker Compose Services**
+   - db, redis, backend, frontend, geoserver, nginx
+2. **Volumes & Networking**
+3. **Environment Variables**
+4. **SSL/TLS**
 ```
 
 ### 10.2. `api.md`
@@ -2077,21 +2077,21 @@ GeoServer WFS supports output formats:
   - `CREATE INDEX idx_adm_name ON cadastral_administrativeboundary (name);`
 
 ## CRS & Transformations
-- **Source Data**: If original GML/Shapefile is in **EPSG:4326** or **EPSG:3857**, use `-t_srs EPSG:3765` in `ogr2ogr` to reproject.  
-- **Database**: Store geometries in **EPSG:3765** (TMH / D48).  
-- **Frontend**: Reproject on-fly to **EPSG:3857** using OpenLayers.  
+- **Source Data**: If original GML/Shapefile is in **EPSG:4326** or **EPSG:3857**, use `-t_srs EPSG:3765` in `ogr2ogr` to reproject.
+- **Database**: Store geometries in **EPSG:3765** (TMH / D48).
+- **Frontend**: Reproject on-fly to **EPSG:3857** using OpenLayers.
 
 ## Data Volume Considerations
-- Cadastral parcels: ~1.5 million features  
-- Administrative boundaries: ~5 000 features  
-- Plan to create spatial indexes for all geometry columns.  
+- Cadastral parcels: ~1.5 million features
+- Administrative boundaries: ~5 000 features
+- Plan to create spatial indexes for all geometry columns.
 
 ## Foreign Keys & Relationships
-- If additional tables (e.g., land use, ownership), define proper **FK** relationships.  
-- Use **`SERIAL`** or **`BIGSERIAL`** for surrogate IDs if needed.  
+- If additional tables (e.g., land use, ownership), define proper **FK** relationships.
+- Use **`SERIAL`** or **`BIGSERIAL`** for surrogate IDs if needed.
 
 ## Versioning & History
-- Consider using **audit triggers** (e.g., `trigger_update_timestamp()`) if you need to track changes.  
+- Consider using **audit triggers** (e.g., `trigger_update_timestamp()`) if you need to track changes.
 ```
 
 ### 10.5. `scraping.md`
@@ -2125,22 +2125,22 @@ GeoServer WFS supports output formats:
 
 ### 1.3. Parsing Logic
 
-1. **Namespace**: ATOM uses `xmlns="http://www.w3.org/2005/Atom"`.  
+1. **Namespace**: ATOM uses `xmlns="http://www.w3.org/2005/Atom"`.
 2. **Elements**:
-   - `<entry>`: One dataset release  
-   - `<entry><updated>`: Timestamp (UTC)  
-   - `<entry><link rel="enclosure" href="…" />`: Download URL  
+   - `<entry>`: One dataset release
+   - `<entry><updated>`: Timestamp (UTC)
+   - `<entry><link rel="enclosure" href="…" />`: Download URL
 3. **Deduplication**:
-   - Use `ETag` or `Last-Modified` from HTTP headers.  
-   - Maintain a **`history.json`** mapping `{ "url": "last_updated" }`.  
-   - Only download if `updated` differs from stored value.  
+   - Use `ETag` or `Last-Modified` from HTTP headers.
+   - Maintain a **`history.json`** mapping `{ "url": "last_updated" }`.
+   - Only download if `updated` differs from stored value.
 
 ### 1.4. Download & Conversion
 
 #### 1.4.1. Supported Formats
-- **GML**: Directly importable via `ogr2ogr`.  
-- **ZIP**: Usually contains ESRI Shapefiles. Unzip, locate `.shp` and import via `ogr2ogr`.  
-- **SHP**: If zipped or standalone.  
+- **GML**: Directly importable via `ogr2ogr`.
+- **ZIP**: Usually contains ESRI Shapefiles. Unzip, locate `.shp` and import via `ogr2ogr`.
+- **SHP**: If zipped or standalone.
 
 #### 1.4.2. Conversion to PostGIS
 
@@ -2160,47 +2160,47 @@ GeoServer WFS supports output formats:
   ```
 
 - **Options**:
-  - `-f "PostgreSQL"`: Target format  
-  - `PG:"..."`: Connection string  
-  - `-nln`: New layer name (schema_table)  
-  - `-nlt PROMOTE_TO_MULTI`: Ensure MultiPolygon geometry  
-  - `-t_srs EPSG:3765`: Reproject to Croatian CRS  
-  - `-lco GEOMETRY_NAME=geom`: Column name for geometry  
-  - `-lco FID=ogc_fid`: Column name for feature ID  
-  - `-overwrite`: Drop existing table & re-create  
+  - `-f "PostgreSQL"`: Target format
+  - `PG:"..."`: Connection string
+  - `-nln`: New layer name (schema_table)
+  - `-nlt PROMOTE_TO_MULTI`: Ensure MultiPolygon geometry
+  - `-t_srs EPSG:3765`: Reproject to Croatian CRS
+  - `-lco GEOMETRY_NAME=geom`: Column name for geometry
+  - `-lco FID=ogc_fid`: Column name for feature ID
+  - `-overwrite`: Drop existing table & re-create
 
 ### 1.5. Error Handling & Logging
 
-- **HTTP Errors**:  
-  - Retry 3× with exponential backoff on 5xx.  
-  - If 4xx, log & skip.  
-- **GDAL Errors**:  
-  - Capture stderr from `ogr2ogr`.  
-  - If `t_srs` fails (e.g., missing CRS), inspect source file’s CRS.  
-- **Partial Downloads**:  
-  - Download to a temp file (`.part`) then rename on success.  
-- **History Persistence**:  
-  - On successful load, update `history.json`.  
-  - Use atomic file write to avoid corruption: write to `history_tmp.json`, then `mv`.  
+- **HTTP Errors**:
+  - Retry 3× with exponential backoff on 5xx.
+  - If 4xx, log & skip.
+- **GDAL Errors**:
+  - Capture stderr from `ogr2ogr`.
+  - If `t_srs` fails (e.g., missing CRS), inspect source file’s CRS.
+- **Partial Downloads**:
+  - Download to a temp file (`.part`) then rename on success.
+- **History Persistence**:
+  - On successful load, update `history.json`.
+  - Use atomic file write to avoid corruption: write to `history_tmp.json`, then `mv`.
 
 ### 1.6. Scheduling
 
 - If using **Celery Beat**:
-  1. Start **Redis**: `docker-compose up -d redis`  
-  2. Start **Celery Worker**:  
+  1. Start **Redis**: `docker-compose up -d redis`
+  2. Start **Celery Worker**:
      ```bash
      docker exec -it croatia_gis_backend celery -A django_project worker -l info
-     ```  
-  3. Start **Celery Beat**:  
+     ```
+  3. Start **Celery Beat**:
      ```bash
      docker exec -it croatia_gis_backend celery -A django_project beat -l info
-     ```  
+     ```
 - If using **cron**:
-  - Use `crontab -e` on host.  
-  - Example entry:  
+  - Use `crontab -e` on host.
+  - Example entry:
     ```cron
     0 3 * * 0 docker exec croatia_gis_backend python /app/scripts/fetch_atom_data.py >> /app/logs/scrape.log 2>&1
-    ```  
+    ```
 
 ---
 
@@ -2208,21 +2208,21 @@ GeoServer WFS supports output formats:
 
 ### 11.1. Python (Backend)
 
-- **Formatting**:  
+- **Formatting**:
   ```bash
   pip install black flake8 isort
   black .
   isort .
   flake8 .
   ```
-- **Type Checking** (optional): Use **mypy**.  
+- **Type Checking** (optional): Use **mypy**.
   ```bash
   pip install mypy
   mypy .
   ```
-- **Tests**:  
-  - Place tests under `cadastral/tests/`.  
-  - Use fixtures for PostGIS geometry.  
+- **Tests**:
+  - Place tests under `cadastral/tests/`.
+  - Use fixtures for PostGIS geometry.
   - Example test (pytest):
 
     ```python
@@ -2310,7 +2310,7 @@ GeoServer WFS supports output formats:
   npm install --save-dev @testing-library/react @testing-library/jest-dom jest-environment-jsdom
   ```
 
-  - Create tests under `src/__tests__/`.  
+  - Create tests under `src/__tests__/`.
   - Example:
 
     ```tsx
@@ -2351,68 +2351,68 @@ GeoServer WFS supports output formats:
 
 Before merging to **main** (or deploying to production), ensure:
 
-- [ ] **Scraper scripts** tested locally (download & ingest test files)  
-- [ ] **PostGIS** database built with correct schemas & indexes  
-- [ ] **GeoServer** workspace, datastore, and layers published correctly  
-- [ ] **GeoDjango** API endpoints returning valid GeoJSON  
-- [ ] **React** UI renders map, toggles layers, shows metadata, and downloads work  
-- [ ] **Docker Compose** up & services communicate (networking, env vars)  
-- [ ] **nginx** reverse proxy routes requests correctly (HTTP & HTTPS)  
-- [ ] **README.md** up-to-date with run instructions  
-- [ ] **Documentation** in `docs/` covers architecture, API, data model, scraping  
-- [ ] **Testing**: All unit tests (backend & frontend) pass in CI  
-- [ ] **Linting & Formatting**: No lint errors, code formatted with Black & Prettier  
+- [ ] **Scraper scripts** tested locally (download & ingest test files)
+- [ ] **PostGIS** database built with correct schemas & indexes
+- [ ] **GeoServer** workspace, datastore, and layers published correctly
+- [ ] **GeoDjango** API endpoints returning valid GeoJSON
+- [ ] **React** UI renders map, toggles layers, shows metadata, and downloads work
+- [ ] **Docker Compose** up & services communicate (networking, env vars)
+- [ ] **nginx** reverse proxy routes requests correctly (HTTP & HTTPS)
+- [ ] **README.md** up-to-date with run instructions
+- [ ] **Documentation** in `docs/` covers architecture, API, data model, scraping
+- [ ] **Testing**: All unit tests (backend & frontend) pass in CI
+- [ ] **Linting & Formatting**: No lint errors, code formatted with Black & Prettier
 
 ---
 
 ## 🧠 Tips & Considerations for the AI Agent
 
-1. **Monitoring Feed Changes**:  
-   - Use HTTP ETag/Last-Modified to detect truly new/changed feeds.  
-   - If feed structure changes (element names), update XML parsing logic.  
+1. **Monitoring Feed Changes**:
+   - Use HTTP ETag/Last-Modified to detect truly new/changed feeds.
+   - If feed structure changes (element names), update XML parsing logic.
 
-2. **Handling Large Datasets**:  
-   - Cadastral parcels may be millions of polygons—consider batch ingest or streaming via `ogr2ogr` with `-segments` and `-clip`.  
-   - Use **COPY** or **`ogr2ogr -append`** instead of full table overwrite if incremental updates are possible.  
+2. **Handling Large Datasets**:
+   - Cadastral parcels may be millions of polygons—consider batch ingest or streaming via `ogr2ogr` with `-segments` and `-clip`.
+   - Use **COPY** or **`ogr2ogr -append`** instead of full table overwrite if incremental updates are possible.
 
-3. **Spatial Indexing & Performance**:  
-   - After each ingest, run `CREATE INDEX <idx_name> ON <table> USING GIST (geom);`.  
-   - VACUUM ANALYZE tables periodically.  
+3. **Spatial Indexing & Performance**:
+   - After each ingest, run `CREATE INDEX <idx_name> ON <table> USING GIST (geom);`.
+   - VACUUM ANALYZE tables periodically.
 
-4. **GeoServer Caching**:  
-   - Enable **GeoWebCache** for WMS/WFS tile caching.  
-   - Configure caching parameters (`gridsets`, `diskQuota`, etc.) to speed up repeated map views.  
+4. **GeoServer Caching**:
+   - Enable **GeoWebCache** for WMS/WFS tile caching.
+   - Configure caching parameters (`gridsets`, `diskQuota`, etc.) to speed up repeated map views.
 
-5. **CRS Transformations**:  
-   - If source GML uses EPSG:3765 but `ogr2ogr` misinterprets, supply a user-provided CRS file.  
-   - Ensure `proj4` definition for EPSG:3765 is available in container.  
+5. **CRS Transformations**:
+   - If source GML uses EPSG:3765 but `ogr2ogr` misinterprets, supply a user-provided CRS file.
+   - Ensure `proj4` definition for EPSG:3765 is available in container.
 
-6. **Production Deployment**:  
-   - Use a managed PostGIS (e.g., AWS RDS) for high availability.  
-   - Run GeoServer behind a load balancer if expecting high traffic.  
-   - Use a CI/CD pipeline (GitHub Actions) to build Docker images on push, run tests, then push to container registry.  
+6. **Production Deployment**:
+   - Use a managed PostGIS (e.g., AWS RDS) for high availability.
+   - Run GeoServer behind a load balancer if expecting high traffic.
+   - Use a CI/CD pipeline (GitHub Actions) to build Docker images on push, run tests, then push to container registry.
 
-7. **Security & Permissions**:  
-   - Use database users with minimal privileges (e.g., separate “writer” for ingest, “reader” for GeoServer).  
-   - Use GeoServer security to restrict publishing privileges; allow “read-only” for WFS.  
-   - Enforce HTTPS and HSTS in nginx.  
+7. **Security & Permissions**:
+   - Use database users with minimal privileges (e.g., separate “writer” for ingest, “reader” for GeoServer).
+   - Use GeoServer security to restrict publishing privileges; allow “read-only” for WFS.
+   - Enforce HTTPS and HSTS in nginx.
 
-8. **Scaling & Caching**:  
-   - For WFS downloads of large layers, consider pre-generating GeoPackages and storing them on object storage (e.g., S3).  
-   - Use CDN for serving static assets (React build).  
+8. **Scaling & Caching**:
+   - For WFS downloads of large layers, consider pre-generating GeoPackages and storing them on object storage (e.g., S3).
+   - Use CDN for serving static assets (React build).
 
-9. **Backup & Recovery**:  
-   - Schedule regular PostGIS backups (`pg_dump`).  
-   - Export GeoServer `data_dir` settings and styles periodically.  
+9. **Backup & Recovery**:
+   - Schedule regular PostGIS backups (`pg_dump`).
+   - Export GeoServer `data_dir` settings and styles periodically.
 
-10. **Future Extensions**:  
-    - Add **user authentication** (e.g., JWT via DRF).  
-    - Allow users to **draw custom polygons** and query intersecting parcels.  
-    - Integrate additional layers: Land Cover, Hydrography, etc.  
-    - Provide **vector tile** support (TileJSON) for improved performance.  
+10. **Future Extensions**:
+    - Add **user authentication** (e.g., JWT via DRF).
+    - Allow users to **draw custom polygons** and query intersecting parcels.
+    - Integrate additional layers: Land Cover, Hydrography, etc.
+    - Provide **vector tile** support (TileJSON) for improved performance.
 
 ---
 
-You now have a **detailed blueprint**—from **data ingestion** to **backend**, **GeoServer**, **frontend**, **Docker**, **nginx**, **documentation**, and **best practices**.  
+You now have a **detailed blueprint**—from **data ingestion** to **backend**, **GeoServer**, **frontend**, **Docker**, **nginx**, **documentation**, and **best practices**.
 
 Proceed to implement each component step by step, iteratively test locally, and then stage for a production-like environment. Good luck!

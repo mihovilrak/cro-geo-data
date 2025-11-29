@@ -139,8 +139,8 @@ services:
       retries: 10
       start_period: 60s
     command: >
-      sh -c "cd /var/local/geoserver 
-      && chmod +x init.sh 
+      sh -c "cd /var/local/geoserver
+      && chmod +x init.sh
       && ./init.sh"
 
   nginx:

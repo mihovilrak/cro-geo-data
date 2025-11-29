@@ -13,7 +13,7 @@ describe('Navbar', () => {
     render(<Navbar />);
     const homeLink = screen.getByRole('link', { name: /home/i });
     const aboutLink = screen.getByRole('link', { name: /about/i });
-    
+
     expect(homeLink).toBeInTheDocument();
     expect(aboutLink).toBeInTheDocument();
     expect(homeLink).toHaveAttribute('href', '/');

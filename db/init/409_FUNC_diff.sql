@@ -10,7 +10,7 @@ RETURNS TABLE(
     updated INTEGER
 ) AS $$
 
-DECLARE 
+DECLARE
     columns TEXT[];
     inserted INTEGER;
     deleted INTEGER;
@@ -31,19 +31,19 @@ BEGIN
     SELECT * FROM staging.md5_hash(schema_name || '.' || table_new, 'id', columns);
 
     CREATE INDEX idx_hashes_a_id
-    ON staging.hashes_a 
+    ON staging.hashes_a
     USING HASH (id);
 
     CREATE INDEX idx_hashes_b_id
-    ON staging.hashes_b 
+    ON staging.hashes_b
     USING HASH (id);
 
     CREATE INDEX idx_hashes_a_hash
-    ON staging.hashes_a 
+    ON staging.hashes_a
     USING HASH (row_hash);
 
     CREATE INDEX idx_hashes_b_hash
-    ON staging.hashes_b 
+    ON staging.hashes_b
     USING HASH (row_hash);
 
     IF schema_name = 'dkp'
@@ -59,10 +59,10 @@ BEGIN
         );
     END IF;
 
-    SELECT 
+    SELECT
         COUNT(*) FILTER (WHERE a.id IS NULL) AS inserted_cnt,
         COUNT(*) FILTER (WHERE b.id IS NULL) AS deleted_cnt,
-        COUNT(*) FILTER (WHERE a.id IS NOT NULL AND b.id IS NOT NULL 
+        COUNT(*) FILTER (WHERE a.id IS NOT NULL AND b.id IS NOT NULL
                          AND a.row_hash IS DISTINCT FROM b.row_hash) AS updated_cnt
     INTO inserted, deleted, updated
     FROM staging.hashes_a a
